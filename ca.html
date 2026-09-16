@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>مشاركة الفعاليات وتتبّع الإحالات — رحلة المستخدم على الويب</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --page:#EDF1F7; --card:#FFFFFF; --sunken:#EEF2F7;
+  --line:#E1E7EF; --line-2:#C6D0DD;
+  --ink:#16202E; --slate:#5B6879; --muted:#8A96A6;
+  --primary:#1B5BD7; --primary-tint:#E9F0FE;
+  --give:#12775C; --give-tint:#E4F2EE;
+  --tix:#6A4CB8; --tix-tint:#EEEAF9;
+  --warn:#A8630A;
+  --ar:"IBM Plex Sans Arabic",system-ui,sans-serif;
+  --en:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--ink);font-family:var(--ar);line-height:1.75}
+.wrap{max-width:1240px;margin:0 auto;padding:0 24px 80px}
+
+.cover{padding:70px 0 38px;border-bottom:1px solid var(--line)}
+.kicker{color:var(--primary);font-weight:600;font-size:14px;margin:0 0 10px}
+.cover h1{font-size:38px;line-height:1.3;margin:0 0 14px;font-weight:700}
+.cover p{margin:0;max-width:62ch;color:var(--slate);font-size:17px}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+.tag{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:13px;color:var(--slate)}
+.tag b{color:var(--ink);font-weight:600}
+
+.step{padding:54px 0;border-bottom:1px solid var(--line)}
+.step-head{display:flex;gap:16px;align-items:flex-start;margin-bottom:24px}
+.num{flex:0 0 auto;width:38px;height:38px;border-radius:50%;background:var(--primary);color:#fff;
+  display:grid;place-items:center;font-family:var(--en);font-weight:700;font-size:16px;margin-top:2px}
+.step-head h2{margin:0 0 6px;font-size:23px;font-weight:700}
+.step-head p{margin:0;color:var(--slate);max-width:64ch}
+.stage{background:linear-gradient(180deg,#E2E8F1,#EDF1F7);border:1px solid var(--line);border-radius:18px;padding:30px 24px}
+.stage + .stage{margin-top:16px}
+.cap{text-align:center;font-size:12.5px;color:var(--slate);margin:12px 0 0}
+.notes{margin:20px 0 0;padding:0;list-style:none;display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.notes li{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:11px 14px;font-size:14px;color:var(--slate)}
+.notes li b{color:var(--ink);font-weight:600}
+.rule{background:var(--primary-tint);border:1px solid #CFDFFB;border-radius:10px;padding:12px 16px;margin-top:16px;font-size:14px;color:#173E8F}
+
+/* browser frame */
+.win{background:var(--card);border:1px solid var(--line-2);border-radius:11px;overflow:hidden;
+  box-shadow:0 20px 44px rgba(22,32,46,.16);margin:0 auto;max-width:1120px;position:relative}
+.win.sm{max-width:820px}
+.chrome{background:#E6EBF2;border-bottom:1px solid var(--line);padding:9px 12px;display:flex;align-items:center;gap:8px}
+.dot{width:10px;height:10px;border-radius:50%;background:#C7D0DC}
+.url{flex:1;background:#fff;border:1px solid var(--line);border-radius:6px;font-size:11px;color:var(--muted);
+  padding:5px 11px;font-family:var(--en)}
+.overlay{position:absolute;inset:37px 0 0;background:rgba(16,32,46,.55);display:grid;place-items:center;padding:22px}
+
+/* UI atoms */
+.ui{font-family:var(--en);font-size:13px;color:var(--ink)}
+[dir="ltr"]{font-family:var(--en)}
+.pad{padding:18px 20px}
+.row{display:flex;align-items:center;gap:8px}
+.between{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.muted{color:var(--muted)} .slate{color:var(--slate)}
+.sm{font-size:11.5px} .xs{font-size:10.5px}
+.ui h3{margin:0;font-size:17px;font-weight:700;line-height:1.35}
+.ui h4{margin:0;font-size:13px;font-weight:600}
+.hr{height:1px;background:var(--line);margin:14px 0}
+
+.appbar{background:#fff;border-bottom:1px solid var(--line);padding:12px 20px;display:flex;align-items:center;
+  justify-content:space-between;font-size:12.5px}
+.logo{width:23px;height:23px;border-radius:6px;background:var(--primary);color:#fff;display:grid;place-items:center;
+  font-size:11px;font-weight:700}
+.nav{display:flex;gap:18px;color:var(--slate)}
+.nav .on{color:var(--primary);font-weight:600}
+
+.hero{height:190px;border-radius:10px;background:
+  radial-gradient(160px 110px at 22% 30%, #f2cd8d, transparent 70%),
+  radial-gradient(200px 130px at 76% 62%, #82adea, transparent 72%),
+  linear-gradient(120deg,#2c3f5c,#44648f);position:relative}
+.hero.s{height:120px}
+.hero span{position:absolute;inset:auto 14px 12px;color:#fff;font-size:11px;opacity:.7}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:8px;font-weight:600;
+  font-size:13px;padding:10px 15px;border:1px solid transparent;white-space:nowrap}
+.btn.p{background:var(--primary);color:#fff}
+.btn.s{background:#fff;color:var(--ink);border-color:var(--line-2)}
+.btn.t{background:var(--primary-tint);color:var(--primary);border-color:#CFDFFB}
+.btn.full{width:100%} .btn.sm{padding:7px 12px;font-size:12px}
+
+.chip{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:3px 10px;font-size:11px;font-weight:600}
+.chip.g{background:var(--give-tint);color:var(--give)}
+.chip.b{background:var(--primary-tint);color:var(--primary)}
+.chip.n{background:var(--sunken);color:var(--slate)}
+.chip.w{background:#FBF0DF;color:var(--warn)}
+.chip.p{background:var(--tix-tint);color:var(--tix)}
+
+.card{border:1px solid var(--line);border-radius:11px;background:#fff}
+.meta{display:flex;gap:8px;font-size:11.5px;color:var(--slate)}
+.meta div{flex:1;background:var(--sunken);border-radius:8px;padding:9px 11px}
+.meta b{display:block;color:var(--ink);font-weight:600}
+
+.kpi{border:1px solid var(--line);border-radius:11px;padding:13px 14px;background:#fff}
+.kpi .v{font-family:var(--en);font-weight:700;font-size:26px;letter-spacing:-.8px;line-height:1.15;
+  font-variant-numeric:tabular-nums}
+.kpi .l{font-size:11.5px;color:var(--slate);margin-top:3px}
+.kpi .d{font-size:10.5px;color:var(--give);margin-top:4px;font-weight:600}
+.g2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+
+.split{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:11.5px;background:#fff}
+.split div{flex:1;padding:10px 12px;text-align:center;border-left:1px solid var(--line)}
+.split div:last-child{border-left:0}
+.split b{display:block;font-family:var(--en);font-size:16px;font-weight:700}
+.split .g b{color:var(--give)} .split .t b{color:var(--tix)}
+
+.tabs{display:flex;gap:22px;border-bottom:1px solid var(--line);font-size:12.5px;color:var(--slate)}
+.tabs span{padding:9px 0}
+.tabs .on{color:var(--primary);font-weight:600;box-shadow:inset 0 -2px 0 var(--primary)}
+
+.chan{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;text-align:center}
+.chan a{border:1px solid var(--line);border-radius:10px;padding:12px 4px;display:block;color:var(--ink)}
+.chan i{display:grid;place-items:center;width:30px;height:30px;margin:0 auto 6px;border-radius:9px;
+  background:var(--sunken);font-style:normal;font-size:14px;font-weight:700;color:var(--slate)}
+.chan a.hi{border-color:var(--primary);background:var(--primary-tint)}
+.chan a.hi i{background:var(--primary);color:#fff}
+.chan em{font-style:normal;font-size:10.5px;display:block}
+
+.field{display:flex;border:1px solid var(--line-2);border-radius:8px;overflow:hidden;background:#fff}
+.field input{flex:1;border:0;padding:10px 12px;font-size:11.5px;color:var(--slate);font-family:var(--en);min-width:0}
+.field .cp{background:var(--primary);color:#fff;padding:10px 16px;font-size:12px;font-weight:600}
+.field .cp.done{background:var(--give)}
+
+.toggle{width:36px;height:21px;border-radius:99px;background:var(--primary);position:relative;flex:0 0 auto}
+.toggle::after{content:"";position:absolute;top:2px;left:17px;width:17px;height:17px;border-radius:50%;background:#fff}
+.toggle.off{background:var(--line-2)} .toggle.off::after{left:2px}
+
+.banner{background:var(--primary-tint);border:1px solid #CFDFFB;border-radius:11px;padding:13px 15px;display:flex;gap:12px;align-items:flex-start}
+.av{width:34px;height:34px;border-radius:50%;background:var(--primary);color:#fff;display:grid;place-items:center;
+  font-size:12px;font-weight:700;flex:0 0 auto}
+.av.lg{width:52px;height:52px;font-size:16px} .av.sm{width:26px;height:26px;font-size:10px}
+
+table.t{width:100%;border-collapse:collapse;font-size:12px}
+table.t th{background:var(--sunken);color:var(--slate);font-weight:600;text-align:left;padding:9px 10px;
+  border-bottom:1px solid var(--line);white-space:nowrap}
+table.t td{padding:11px 10px;border-bottom:1px solid var(--line)}
+table.t td.n,table.t th.n{text-align:right;font-variant-numeric:tabular-nums}
+table.t tr:last-child td{border-bottom:0}
+table.t tr.hl td{background:var(--primary-tint)}
+
+.bar{height:8px;border-radius:99px;background:var(--sunken);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--primary)}
+.chart{display:flex;align-items:flex-end;gap:6px;height:104px}
+.chart i{flex:1;border-radius:3px 3px 0 0;background:var(--give);display:block}
+.chart i.t{background:var(--tix)}
+.donut{width:150px;height:150px;border-radius:50%;flex:0 0 auto;
+  background:conic-gradient(var(--primary) 0 49%, #4E86E8 49% 69%, #7FA7EE 69% 86%, #A9C4F4 86% 95%, #CFDFFB 95% 100%);
+  display:grid;place-items:center}
+.donut span{width:96px;height:96px;border-radius:50%;background:#fff;display:grid;place-items:center;text-align:center;line-height:1.3}
+
+.tl .it{display:flex;gap:11px;padding:11px 0;border-bottom:1px solid var(--line)}
+.tl .it:last-child{border-bottom:0}
+.ic{width:27px;height:27px;border-radius:9px;display:grid;place-items:center;font-size:12px;flex:0 0 auto}
+.ic.g{background:var(--give-tint);color:var(--give)} .ic.t{background:var(--tix-tint);color:var(--tix)}
+.ic.b{background:var(--primary-tint);color:var(--primary)}
+
+.qr{width:132px;height:132px;border-radius:10px;margin:0 auto;
+  background:repeating-conic-gradient(var(--ink) 0 25%, #fff 0 50%) 0 0/19px 19px,#fff;
+  border:6px solid #fff;box-shadow:0 0 0 1px var(--line)}
+
+.drawer{position:absolute;top:37px;bottom:0;left:0;width:400px;background:#fff;border-right:1px solid var(--line);
+  box-shadow:14px 0 34px rgba(22,32,46,.16);overflow:auto}
+
+.outro{padding:54px 0 20px}
+.outro h2{font-size:24px;margin:0 0 18px}
+.flowline{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:13px}
+.flowline span{background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 12px}
+.flowline b{color:var(--primary)}
+@media(max-width:760px){.cover h1{font-size:27px}.stage{padding:16px 10px}.win{box-shadow:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="cover">
+  <p class="kicker">مشاركة الفعاليات وتتبّع الإحالات · نسخة الويب</p>
+  <h1>رحلة المستخدم على الشاشة الكبيرة</h1>
+  <p>كل الشاشات هنا معروضة كما ستظهر داخل المتصفح على سطح المكتب — لأن المنتج ويب أولًا. تسع خطوات من داعمة تشارك فعالية، حتى لوحة الإدارة التي تُظهر من جلب التبرعات فعلًا.</p>
+  <div class="legend">
+    <span class="tag"><b>سارة</b> — الداعمة التي تشارك</span>
+    <span class="tag"><b>الصديق</b> — من يفتح الرابط</span>
+    <span class="tag"><b>المنظّم</b> — موظف المؤسسة</span>
+  </div>
+</header>
+
+<!-- 1 -->
+<section class="step">
+  <div class="step-head"><div class="num">1</div>
+    <div><h2>صفحة الفعالية</h2>
+    <p>زر «Share &amp; Invite» ثالث في البطاقة الجانبية الثابتة، بجانب التبرع والتذاكر — ظاهر بلا أن ينافسهما.</p></div>
+  </div>
+
+  <div class="stage">
+    <div class="win" dir="ltr">
+      <div class="chrome"><i class="dot"></i><i class="dot"></i><i class="dot"></i>
+        <div class="url">hopefdn.org/events/ramadan-dinner</div></div>
+      <div class="ui">
+        <div class="appbar">
+          <div class="row"><span class="logo">H</span><b>Hope Foundation</b></div>
+          <div class="nav"><span class="on">Events</span><span>Programs</span><span>About</span></div>
+          <div class="row"><span class="slate">Sign in</span><span class="btn p sm">Donate</span></div>
+        </div>
+        <div class="pad" style="display:grid;grid-template-columns:1fr 300px;gap:24px">
+          <div>
+            <div class="hero"><span>Ramadan Charity Dinner · Al Noor Hall</span></div>
+            <h3 style="margin:16px 0 4px;font-size:24px">Ramadan Charity Dinner</h3>
+            <div class="slate sm" style="margin-bottom:14px">Hosted by Hope Foundation</div>
+            <div class="meta" style="margin-bottom:16px">
+              <div><b>Fri 12 Mar · 7:00 PM</b>Doors open 6:30</div>
+              <div><b>Al Noor Hall</b>Dubai, UAE</div>
+              <div><b>84 tickets left</b>of 300 seats</div>
+            </div>
+            <h4>About this event</h4>
+            <p class="slate sm" style="margin:8px 0 16px;max-width:62ch;line-height:1.8">
+              An evening of community and giving in support of families in need. Every seat at the table funds a month
+              of meals for a household, and every donation goes directly to the food programme.</p>
+
+            <div class="card pad between" style="background:var(--primary-tint);border-color:#CFDFFB">
+              <div>
+                <h4 style="color:var(--primary)">Know someone who would care about this?</h4>
+                <div class="xs slate" style="margin-top:3px">Share it and we'll show you the difference your invitation makes.</div>
+              </div>
+              <span class="btn p sm">↗ Share &amp; Invite</span>
+            </div>
+          </div>
+
+          <div>
+            <div class="card pad" style="position:sticky;top:0">
+              <div class="slate sm">From $25</div>
+              <div style="display:grid;gap:8px;margin:12px 0 14px">
+                <span class="btn p full">Donate Now</span>
+                <span class="btn s full">Buy Tickets</span>
+                <span class="btn t full">↗ Share &amp; Invite</span>
+              </div>
+              <div class="hr"></div>
+              <div class="between sm"><span class="slate">Raised so far</span><b style="font-size:15px">$18,400</b></div>
+              <div class="bar" style="margin:9px 0 6px"><i style="width:61%"></i></div>
+              <div class="xs muted">61% of the $30,000 goal · 142 supporters</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="cap">صفحة الفعالية — سطح المكتب ١٤٤٠px</p>
+  </div>
+
+  <ul class="notes">
+    <li><b>مدخلان فقط للمشاركة</b> — البطاقة الجانبية ولوحة داخل المحتوى</li>
+    <li><b>البطاقة ثابتة أثناء التمرير</b> فيبقى التبرع في المتناول دائمًا</li>
+    <li>لو الميزة مقفولة عند المؤسسة يختفي الزر تمامًا بدل أن يظهر معطّلًا</li>
+  </ul>
+</section>
+
+<!-- 2 -->
+<section class="step">
+  <div class="step-head"><div class="num">2</div>
+    <div><h2>نافذة المشاركة</h2>
+    <p>تفتح فوق الصفحة نفسها بلا انتقال. الترتيب مقصود: الرسالة الشخصية أولًا لأنها تُرسل مع كل قناة، ثم القنوات.</p></div>
+  </div>
+
+  <div class="stage">
+    <div class="win" dir="ltr" style="min-height:530px">
+      <div class="chrome"><i class="dot"></i><i class="dot"></i><i class="dot"></i>
+        <div class="url">hopefdn.org/events/ramadan-dinner?share=1</div></div>
+      <div class="ui" style="filter:blur(1.5px);opacity:.6">
+        <div class="appbar"><div class="row"><span class="logo">H</span><b>Hope Foundation</b></div>
+          <div class="nav"><span>Events</span><span>Programs</span></div><span class="slate">Sign in</span></div>
+        <div class="pad" style="display:grid;grid-template-columns:1fr 300px;gap:24px">
+          <div><div class="hero s"></div><h3 style="margin-top:14px">Ramadan Charity Dinner</h3></div>
+          <div class="card pad"><span class="btn p full">Donate Now</span></div>
+        </div>
+      </div>
+
+      <div class="overlay">
+        <div class="card" style="width:560px;border-radius:18px;box-shadow:0 24px 60px rgba(16,32,46,.35)">
+          <div class="pad between" style="border-bottom:1px solid var(--line)">
+            <div><h3>Share &amp; Invite</h3>
+              <div class="xs muted" style="margin-top:2px">Ramadan Charity Dinner · Fri 12 Mar</div></div>
+            <span class="muted">✕</span>
+          </div>
+          <div class="pad">
+            <div class="between" style="margin-bottom:8px">
+              <h4>Add a personal message</h4><span class="xs muted">112 / 280</span></div>
+            <div class="card pad slate sm" style="line-height:1.75;margin-bottom:16px">
+              Hi! I'm supporting this fundraising event and would love for you to join me.</div>
+
+            <div class="card pad between" style="margin-bottom:18px">
+              <div><h4>Show my name to people I invite</h4>
+                <div class="xs muted" style="margin-top:2px">They'll see “Sarah Ahmed invited you.”</div></div>
+              <span class="toggle"></span>
+            </div>
+
+            <h4 style="margin-bottom:10px">Share with</h4>
+            <div class="chan" style="margin-bottom:10px">
+              <a class="hi"><i>✆</i><em>WhatsApp</em></a>
+              <a><i>f</i><em>Facebook</em></a>
+              <a><i>in</i><em>LinkedIn</em></a>
+              <a><i>𝕏</i><em>X</em></a>
+              <a><i>➤</i><em>Telegram</em></a>
+            </div>
+            <div class="chan" style="margin-bottom:18px">
+              <a><i>✉</i><em>Email</em></a>
+              <a><i>💬</i><em>SMS</em></a>
+              <a><i>⧉</i><em>Copy link</em></a>
+              <a><i>▦</i><em>QR code</em></a>
+              <a><i>⋯</i><em>More</em></a>
+            </div>
+
+            <h4 style="margin-bottom:8px">Your link</h4>
+            <div class="field"><input value="hopefdn.org/e/ramadan-dinner?ref=SARAH92" readonly><span class="cp">Copy</span></div>
+            <div class="xs muted" style="margin-top:8px">Anything raised through this link is credited to you.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="cap">نافذة المشاركة فوق صفحة الفعالية — عرض ٥٦٠px</p>
+  </div>
+
+  <div class="stage">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start">
+      <div>
+        <div class="card pad" dir="ltr" style="border-radius:16px">
+          <div class="between" style="margin-bottom:14px"><h3 class="ui">Link ready</h3><span class="muted">✕</span></div>
+          <div class="field"><input value="hopefdn.org/e/ramadan-dinner?ref=SARAH92" readonly><span class="cp done">Copied ✓</span></div>
+          <div class="ui sm" style="color:var(--give);margin-top:10px">
+            ✓ Link ready — anything raised through it is credited to you until the event ends on 12 Mar.</div>
+          <div class="hr"></div>
+          <div class="ui">
+            <h4 style="margin-bottom:9px">My referral links</h4>
+            <table class="t">
+              <tr><td><b>General link</b><div class="xs muted">hopefdn.org/ref/SARAH92</div></td>
+                <td class="n xs">184 clicks<br>$2,450</td><td class="n"><span class="chip g">Active</span></td></tr>
+              <tr><td><b>Ramadan Charity Dinner</b><div class="xs muted">…/e/ramadan-dinner?ref=SARAH92</div></td>
+                <td class="n xs">43 clicks<br>$740</td><td class="n"><span class="chip g">Active</span></td></tr>
+              <tr><td><b>School Fundraising Event</b><div class="xs muted">…/e/school-fund?ref=SARAH92</div></td>
+                <td class="n xs">62 clicks<br>$980</td><td class="n"><span class="chip n">Ended</span></td></tr>
+            </table>
+          </div>
+        </div>
+        <p class="cap">حالة «الرابط جاهز» + قائمة روابط المشارك</p>
+      </div>
+
+      <div>
+        <div class="card pad" dir="ltr" style="border-radius:16px;text-align:center">
+          <div class="between" style="margin-bottom:16px"><h3 class="ui">‹ QR code</h3><span class="muted">✕</span></div>
+          <div class="qr"></div>
+          <div class="ui" style="margin-top:14px">
+            <div style="font-weight:700">Ramadan Charity Dinner</div>
+            <div class="sm slate">Invited by Sarah Ahmed</div>
+            <div class="xs muted" style="margin-top:4px">hopefdn.org/e/ramadan-dinner?ref=SARAH92</div>
+            <div class="hr"></div>
+            <div class="row sm slate" style="justify-content:center;gap:16px;margin-bottom:14px">
+              <span>✓ Event name</span><span>✓ My name</span><span>✓ Link text</span></div>
+            <div class="row" style="gap:8px">
+              <span class="btn s sm" style="flex:1">Download PNG</span>
+              <span class="btn s sm" style="flex:1">Download SVG</span>
+              <span class="btn p sm" style="flex:1">Print sheet</span>
+            </div>
+            <div class="xs muted" style="margin-top:12px">Scans are tracked as the “QR code” channel.</div>
+          </div>
+        </div>
+        <p class="cap">نافذة رمز QR — للملصقات وبطاقات الطاولات</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="rule"><b>القاعدة:</b> الرابط يُنشأ مرة واحدة لكل شخص لكل فعالية — فتح النافذة مئة مرة يعطي نفس الرابط.</div>
+</section>
+
+<!-- 3 -->
+<section class="step">
+  <div class="step-head"><div class="num">3</div>
+    <div><h2>الصديق يفتح الرابط</h2>
+    <p>شريط واحد هادئ فوق الصفحة يوضّح من دعاه، ثم صفحة الفعالية العادية تمامًا. لا شيء يوحي بالإعلان.</p></div>
+  </div>
+
+  <div class="stage">
+    <div class="win" dir="ltr">
+      <div class="chrome"><i class="dot"></i><i class="dot"></i><i class="dot"></i>
+        <div class="url">hopefdn.org/e/ramadan-dinner?ref=SARAH92&amp;ch=whatsapp</div></div>
+      <div class="ui">
+        <div class="appbar">
+          <div class="row"><span class="logo">H</span><b>Hope Foundation</b></div>
+          <div class="nav"><span class="on">Events</span><span>Programs</span><span>About</span></div>
+          <div class="row"><span class="slate">Sign in</span><span class="btn p sm">Donate</span></div>
+        </div>
+        <div class="pad">
+          <div class="banner" style="margin-bottom:18px">
+            <span class="av">SA</span>
+            <div>
+              <div style="font-weight:600;font-size:14px">Sarah Ahmed invited you to support this event.</div>
+              <div class="sm slate" style="margin-top:4px">“Hi! I'm supporting this fundraising event and would love for you to join me.”</div>
+            </div>
+            <span class="muted" style="margin-left:auto">✕</span>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 300px;gap:24px">
+            <div>
+              <div class="hero"><span>Ramadan Charity Dinner</span></div>
+              <h3 style="margin:16px 0 4px;font-size:24px">Ramadan Charity Dinner</h3>
+              <div class="slate sm" style="margin-bottom:14px">Hosted by Hope Foundation</div>
+              <div class="meta">
+                <div><b>Fri 12 Mar · 7:00 PM</b>Doors open 6:30</div>
+                <div><b>Al Noor Hall</b>Dubai, UAE</div>
+                <div><b>84 tickets left</b>of 300 seats</div>
+              </div>
+            </div>
+            <div class="card pad">
+              <div class="slate sm">From $25</div>
+              <div style="display:grid;gap:8px;margin:12px 0 14px">
+                <span class="btn p full">Donate Now</span>
+                <span class="btn s full">Buy Tickets</span>
+                <span class="btn t full">↗ Share too</span>
+              </div>
+              <div class="xs muted">142 supporters · $18,400 raised</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="cap">صفحة الوصول عبر الإحالة — الشريط لا يتجاوز ٩٦px ارتفاعًا</p>
+  </div>
+
+  <ul class="notes">
+    <li><b>الاسم مطفأ؟</b> ← «Someone invited you to support this event»</li>
+    <li><b>الفعالية منتهية؟</b> ← لا شريط ولا احتساب</li>
+    <li><b>سارة فتحت رابطها؟</b> ← «This is your invitation link» ولا يُحتسب شيء</li>
+  </ul>
+</section>
+
+<!-- 4 -->
+<section class="step">
+  <div class="step-head"><div class="num">4</div>
+    <div><h2>التبرع ثم الدعوة من جديد</h2>
+    <p>الإيصال أولًا وحده، ثم بطاقة دعوة. هذه أعلى لحظة استعداد للمشاركة في المنتج كلّه.</p></div>
+  </div>
+
+  <div class="stage">
+    <div class="win sm" dir="ltr">
+      <div class="chrome"><i class="dot"></i><i class="dot"></i><i class="dot"></i>
+        <div class="url">hopefdn.org/donate/d_8241/thank-you</div></div>
+      <div class="ui pad" style="text-align:center;padding:36px 20px 30px">
+        <div class="av lg" style="margin:0 auto 16px;background:var(--give)">✓</div>
+        <h3 style="font-size:24px">Thank you for supporting this cause!</h3>
+        <div class="slate" style="margin:8px 0 4px">Your $100 donation to Ramadan Charity Dinner is confirmed.</div>
+        <div class="xs muted">A receipt is on its way to your email.</div>
+
+        <div class="card pad between" style="max-width:600px;margin:26px auto 0;text-align:left;
+          background:var(--primary-tint);border-color:#CFDFFB">
+          <div>
+            <h4 style="color:var(--primary);font-size:15px">Double your impact</h4>
+            <div class="sm slate" style="margin-top:4px;max-width:38ch">
+              Invite your friends to support this campaign. We'll show you exactly what your invitation raises.</div>
+          </div>
+          <div class="row" style="gap:8px">
+            <span class="btn s sm">✆ WhatsApp</span>
+            <span class="btn s sm">⧉ Copy link</span>
+            <span class="btn p sm">↗ Share &amp; Invite</span>
+          </div>
+        </div>
+
+        <div class="row" style="gap:10px;justify-content:center;margin-top:20px">
+          <span class="btn s sm">Download receipt</span>
+          <span class="btn s sm">Add to calendar</span>
+          <span class="btn s sm">See the event</span>
+        </div>
+      </div>
+    </div>
+    <p class="cap">صفحة الشكر بعد التبرع</p>
+  </div>
+
+  <div class="stage">
+    <div class="win sm" dir="ltr">
+      <div class="chrome"><i class="dot"></i><i class="dot"></i><i class="dot"></i>
+        <div class="url">hopefdn.org/tickets/o_5512/confirmation</div></div>
+      <div class="ui pad" style="padding:32px 26px">
+        <div style="text-align:center;margin-bottom:22px">
+          <div class="av lg" style="margin:0 auto 14px;background:var(--tix)">✓</div>
+          <h3 style="font-size:22px">Your tickets are confirmed.</h3>
+          <div class="xs muted" style="margin-top:6px">2 × Standard seat · Ramadan Charity Dinner · Fri 12 Mar</div>
+        </div>
+
+        <div class="g2" style="margin-bottom:16px">
+          <div class="card pad row" style="gap:14px">
+            <span class="qr" style="width:62px;height:62px;border-width:4px;margin:0"></span>
+            <div><div style="font-weight:600">Ticket 1 of 2</div><div class="xs muted">Sarah Ahmed</div>
+              <div class="xs slate" style="margin-top:5px">Seat A-14</div></div>
+          </div>
+          <div class="card pad row" style="gap:14px">
+            <span class="qr" style="width:62px;height:62px;border-width:4px;margin:0"></span>
+            <div><div style="font-weight:600">Ticket 2 of 2</div><div class="xs muted">Guest</div>
+              <div class="xs slate" style="margin-top:5px">Seat A-15</div></div>
+          </div>
+        </div>
+        <div class="row" style="gap:8px;justify-content:center;margin-bottom:20px">
+          <span class="btn s sm">Download tickets</span><span class="btn s sm">Add to wallet</span></div>
+
+        <div class="card pad between" style="background:var(--primary-tint);border-color:#CFDFFB">
+          <div><h4 style="color:var(--primary);font-size:15px">Bring your friends</h4>
+            <div class="sm slate" style="margin-top:4px">Invite people to join you at this event. 84 seats left.</div></div>
+          <span class="btn p sm">↗ Share &amp; Invite</span>
+        </div>
+      </div>
+    </div>
+    <p class="cap">تأكيد التذاكر — رمز التذكرة داخل بطاقتها، ورمز الدعوة في نافذة المشاركة فقط</p>
+  </div>
+</section>
+
+<!-- 5 -->
+<section class="step">
+  <div class="step-head"><div class="num">5</div>
+    <div><h2>لوحة المشارك</h2>
+    <p>خمسة مؤشرات، ثم شريط يفصل إيراد التبرعات عن إيراد التذاكر، ثم بطاقة لكل فعالية.</p></div>
+  </div>
+
+  <div class="stage">
+    <div class="win" dir="ltr">
+      <div class="chrome"><i class="dot"></i><i class="dot"></i><i class="dot"></i>
+        <div class="url">hopefdn.org/me/impact</div></div>
+      <div class="ui">
+        <div class="appbar"><div class="row"><span class="logo">H</span><b>Hope Foundation</b></div>
+          <div class="nav"><span>Events</span><span class="on">My impact</span><span>Settings</span></div>
+          <div class="row"><span class="muted">🔔</span><span class="av sm">SA</span></div></div>
+
+        <div class="pad">
+          <div class="between" style="margin-bottom:18px">
+            <div class="row" style="gap:14px">
+              <span class="av lg">SA</span>
+              <div><h3 style="font-size:22px">Sarah Ahmed</h3>
+                <div class="sm slate">Your impact · supporting Hope Foundation since Jan 2025</div></div>
+            </div>
+            <span class="btn p">↗ Share &amp; Invite</span>
+          </div>
+
+          <div class="g5" style="margin-bottom:12px">
+            <div class="kpi"><div class="v" style="color:var(--give)">$2,450</div><div class="l">Donations raised</div><div class="d">▲ $340 (30d)</div></div>
+            <div class="kpi"><div class="v" style="color:var(--tix)">37</div><div class="l">Tickets generated</div><div class="d">▲ 2 (30d)</div></div>
+            <div class="kpi"><div class="v">21</div><div class="l">People converted</div><div class="d">▲ 3 (30d)</div></div>
+            <div class="kpi"><div class="v">184</div><div class="l">Referral clicks</div><div class="d">▲ 22 (30d)</div></div>
+            <div class="kpi"><div class="v">11.4%</div><div class="l">Conversion rate</div><div class="d">▲ 0.6pp</div></div>
+          </div>
+
+          <div class="split" style="margin-bottom:18px">
+            <div class="g"><b>$2,450</b>Donation revenue</div>
+            <div class="t"><b>$640</b>Ticket revenue</div>
+            <div><b>$3,090</b>Total attributed</div>
+          </div>
+
+          <div class="tabs" style="margin-bottom:16px">
+            <span class="on">Events &amp; programs</span><span>Channels</span><span>Activity</span><span>My links</span></div>
+
+          <div class="g3">
+            <div class="card" style="overflow:hidden">
+              <div class="hero s" style="border-radius:0"></div>
+              <div class="pad">
+                <div class="between" style="margin-bottom:6px"><h4>Ramadan Charity Dinner</h4><span class="chip g">Active</span></div>
+                <div class="xs muted" style="margin-bottom:12px">Ends 12 Mar</div>
+                <div class="g3" style="gap:6px;margin-bottom:10px">
+                  <div><div style="font-weight:700;color:var(--give)">$740</div><div class="xs muted">raised</div></div>
+                  <div><div style="font-weight:700;color:var(--tix)">5</div><div class="xs muted">tickets</div></div>
+                  <div><div style="font-weight:700">7</div><div class="xs muted">people</div></div>
+                </div>
+                <div class="xs muted" style="margin-bottom:12px">43 clicks · 16.2% conversion · 2 hours ago</div>
+                <div class="row" style="gap:8px"><span class="btn t sm" style="flex:1">Share</span>
+                  <span class="btn s sm" style="flex:1">View ›</span></div>
+              </div>
+            </div>
+
+            <div class="card" style="overflow:hidden">
+              <div class="hero s" style="border-radius:0;background:linear-gradient(120deg,#3b5340,#5d8060)"></div>
+              <div class="pad">
+                <div class="between" style="margin-bottom:6px"><h4>School Fundraising Event</h4><span class="chip n">Ended</span></div>
+                <div class="xs muted" style="margin-bottom:12px">Ended 2 Feb</div>
+                <div class="g3" style="gap:6px;margin-bottom:10px">
+                  <div><div style="font-weight:700;color:var(--give)">$980</div><div class="xs muted">raised</div></div>
+                  <div><div style="font-weight:700;color:var(--tix)">3</div><div class="xs muted">tickets</div></div>
+                  <div><div style="font-weight:700">9</div><div class="xs muted">people</div></div>
+                </div>
+                <div class="xs muted" style="margin-bottom:12px">62 clicks · 14.5% conversion · 12 Feb</div>
+                <span class="btn s sm full">View ›</span>
+              </div>
+            </div>
+
+            <div class="card" style="overflow:hidden">
+              <div class="hero s" style="border-radius:0;background:linear-gradient(120deg,#5a4636,#8a6b4e)"></div>
+              <div class="pad">
+                <div class="between" style="margin-bottom:6px"><h4>Food Donation Campaign</h4><span class="chip g">Active</span></div>
+                <div class="xs muted" style="margin-bottom:12px">Ongoing programme</div>
+                <div class="g3" style="gap:6px;margin-bottom:10px">
+                  <div><div style="font-weight:700;color:var(--give)">$730</div><div class="xs muted">raised</div></div>
+                  <div><div style="font-weight:700;color:var(--tix)">0</div><div class="xs muted">tickets</div></div>
+                  <div><div style="font-weight:700">5</div><div class="xs muted">people</div></div>
+                </div>
+                <div class="xs muted" style="margin-bottom:12px">79 clicks · 6.3% conversion · yesterday</div>
+                <div class="row" style="gap:8px"><span class="btn t sm" style="flex:1">Share</span>
+                  <span class="btn s sm" style="flex:1">View ›</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="cap">لوحة المشارك — الشاشة الأهم لبقاء الداعم نشطًا</p>
+  </div>
+
+  <ul class="notes">
+    <li><b>التبرعات والتذاكر لا تُدمج أبدًا</b> في رقم واحد بلا شرح</li>
+    <li><b>«أشخاص محوّلون»</b> غير «معاملات» — متبرّع ثلاث مرات يُحسب شخصًا واحدًا</li>
+    <li>كل مؤشر عليه تلميح يشرح طريقة حسابه</li>
+  </ul>
+</section>
+
+<!-- 6 -->
+<section class="step">
+  <div class="step-head"><div class="num">6</div>
+    <div><h2>تحليل القنوات وسجلّ النشاط</h2>
+    <p>أي طريقة مشاركة تنجح معك فعلًا؟ وماذا حدث اليوم؟ — بدون كشف هوية أي متبرع.</p></div>
+  </div>
+
+  <div class="stage">
+    <div class="win" dir="ltr">
+      <div class="chrome"><i class="dot"></i><i class="dot"></i><i class="dot"></i>
+        <div class="url">hopefdn.org/me/impact?tab=channels</div></div>
+      <div class="ui pad">
+        <div class="between" style="margin-bottom:16px">
+          <h3>Channels</h3>
+          <div class="row"><span class="chip n">All events ▾</span><span class="chip n">Last 90 days ▾</span></div>
+        </div>
+
+        <div class="card pad row" style="gap:26px;margin-bottom:16px;align-items:center">
+          <div class="donut"><span><div style="font-weight:700;font-size:17px">$1,090</div>
+            <div class="xs muted">total</div></span></div>
+          <div style="flex:1">
+            <div style="font-weight:600;margin-bottom:4px">WhatsApp brought in the most support.</div>
+            <div class="sm slate" style="margin-bottom:14px">It produced 44% of everything you've raised, from 38% of your clicks.</div>
+            <div style="display:grid;gap:9px">
+              <div><div class="between sm"><span>WhatsApp</span><b>$540 · 49%</b></div><div class="bar" style="margin-top:4px"><i style="width:100%"></i></div></div>
+              <div><div class="between sm"><span>Facebook</span><b>$220 · 20%</b></div><div class="bar" style="margin-top:4px"><i style="width:41%;background:#4E86E8"></i></div></div>
+              <div><div class="between sm"><span>LinkedIn</span><b>$180 · 17%</b></div><div class="bar" style="margin-top:4px"><i style="width:33%;background:#7FA7EE"></i></div></div>
+              <div><div class="between sm"><span>Email</span><b>$100 · 9%</b></div><div class="bar" style="margin-top:4px"><i style="width:19%;background:#A9C4F4"></i></div></div>
+              <div><div class="between sm"><span>Copy link</span><b>$50 · 5%</b></div><div class="bar" style="margin-top:4px"><i style="width:9%;background:#CFDFFB"></i></div></div>
+            </div>
+          </div>
+        </div>
+
+        <table class="t">
+          <tr><th>Channel</th><th class="n">Clicks</th><th class="n">Visitors</th><th class="n">People</th>
+            <th class="n">Donations</th><th class="n">Tickets</th><th class="n">Revenue</th></tr>
+          <tr><td>✆ WhatsApp</td><td class="n">70</td><td class="n">61</td><td class="n">6</td>
+            <td class="n" style="color:var(--give)">$540</td><td class="n">2</td><td class="n"><b>$640</b></td></tr>
+          <tr><td>f Facebook</td><td class="n">42</td><td class="n">38</td><td class="n">3</td>
+            <td class="n" style="color:var(--give)">$220</td><td class="n">0</td><td class="n"><b>$220</b></td></tr>
+          <tr><td>in LinkedIn</td><td class="n">31</td><td class="n">27</td><td class="n">2</td>
+            <td class="n" style="color:var(--give)">$180</td><td class="n">1</td><td class="n"><b>$300</b></td></tr>
+          <tr><td>✉ Email</td><td class="n">24</td><td class="n">21</td><td class="n">1</td>
+            <td class="n" style="color:var(--give)">$100</td><td class="n">0</td><td class="n"><b>$100</b></td></tr>
+          <tr><td>▦ QR code</td><td class="n">5</td><td class="n">5</td><td class="n">0</td>
+            <td class="n muted">$0</td><td class="n">0</td><td class="n muted">$0</td></tr>
+          <tr><td class="muted">? Direct / unknown</td><td class="n muted">—</td><td class="n">12</td><td class="n">1</td>
+            <td class="n" style="color:var(--give)">$80</td><td class="n">0</td><td class="n"><b>$80</b></td></tr>
+        </table>
+        <div class="xs muted" style="margin-top:10px">“Direct” means we couldn't tell which app the link was opened from.</div>
+      </div>
+    </div>
+    <p class="cap">تحليل القنوات — جملة توجيه واحدة بدل رسم صامت</p>
+  </div>
+
+  <div class="stage">
+    <div class="win" dir="ltr" style="min-height:400px">
+      <div class="chrome"><i class="dot"></i><i class="dot"></i><i class="dot"></i>
+        <div class="url">hopefdn.org/me/impact?tab=activity</div></div>
+      <div class="ui pad" style="position:relative">
+        <div class="between" style="margin-bottom:16px">
+          <h3>Activity</h3>
+          <div class="row"><span class="chip n">All events ▾</span><span class="chip n">All types ▾</span></div>
+        </div>
+
+        <div class="sm muted" style="margin-bottom:8px">Today</div>
+        <div class="card pad tl" style="margin-bottom:16px">
+          <div class="it"><span class="ic g">♥</span>
+            <div style="flex:1"><div>A supporter donated <b>$100</b></div>
+              <div class="xs muted">Ramadan Charity Dinner · via WhatsApp</div></div>
+            <span class="xs muted">2 hours ago</span></div>
+          <div class="it"><span class="ic t">🎟</span>
+            <div style="flex:1"><div>Someone purchased <b>2 tickets</b></div>
+              <div class="xs muted">Ramadan Charity Dinner · $120</div></div>
+            <span class="xs muted">5 hours ago</span></div>
+        </div>
+
+        <div class="sm muted" style="margin-bottom:8px">Yesterday</div>
+        <div class="card pad tl" style="margin-bottom:16px">
+          <div class="it"><span class="ic b">↗</span>
+            <div style="flex:1"><div>Your link was opened <b>12 times</b></div>
+              <div class="xs muted">Ramadan Charity Dinner · mostly from WhatsApp</div></div></div>
+          <div class="it"><span class="ic g">♥</span>
+            <div style="flex:1"><div>A supporter donated <b>$50</b></div></div></div>
+        </div>
+
+        <div class="sm muted" style="margin-bottom:8px">Earlier</div>
+        <div class="card pad tl">
+          <div class="it"><span class="ic b">✎</span>
+            <div style="flex:1"><div>You shared <b>School Fundraising Event</b> on Facebook</div></div>
+            <span class="xs muted">12 Feb</span></div>
+        </div>
+
+        <!-- notification dropdown -->
+        <div class="card" style="position:absolute;top:12px;right:20px;width:310px;border-radius:12px;
+          box-shadow:0 18px 40px rgba(22,32,46,.22);overflow:hidden">
+          <div class="pad between" style="padding:12px 14px;border-bottom:1px solid var(--line)">
+            <h4>Notifications</h4><span class="xs" style="color:var(--primary)">Mark all read</span></div>
+          <div style="padding:0 14px">
+            <div class="it" style="display:flex;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)">
+              <span class="ic g">♥</span><div><div class="sm">Your referral just generated a $100 donation.</div>
+              <div class="xs muted">2 hours ago</div></div></div>
+            <div class="it" style="display:flex;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)">
+              <span class="ic t">🎟</span><div><div class="sm">Someone you invited purchased 2 tickets.</div>
+              <div class="xs muted">5 hours ago</div></div></div>
+            <div class="it" style="display:flex;gap:10px;padding:11px 0">
+              <span class="ic b">★</span><div><div class="sm">You've helped raise $500 for this event.</div>
+              <div class="xs muted">Yesterday</div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="cap">سجلّ النشاط مع قائمة الإشعارات داخل التطبيق</p>
+  </div>
+
+  <div class="rule"><b>قاعدة الخصوصية:</b> «شخص دعوته تبرّع بـ $100» — بلا اسم ولا بريد ولا أحرف أولى، ولا حتى في عنوان بريد الإشعار.</div>
+</section>
+
+<!-- 7 -->
+<section class="step">
+  <div class="step-head"><div class="num">7</div>
+    <div><h2>لوحة المنظّم</h2>
+    <p>ثلاثة أسئلة إدارية على شاشة واحدة: كم جلبت المشاركة؟ من جلبها؟ ومن أي قناة؟ — والموظفون في تبويب منفصل.</p></div>
+  </div>
+
+  <div class="stage">
+    <div class="win" dir="ltr">
+      <div class="chrome"><i class="dot"></i><i class="dot"></i><i class="dot"></i>
+        <div class="url">hopefdn.org/admin/referrals</div></div>
+      <div class="ui">
+        <div class="appbar"><div class="row"><span class="logo">H</span><b>Hope Foundation</b><span class="chip n">Admin</span></div>
+          <div class="nav"><span>Dashboard</span><span>Events</span><span>Supporters</span><span class="on">Referrals</span><span>Reports</span></div>
+          <div class="row"><span class="muted">🔔</span><span class="av sm" style="background:#5B6879">MK</span></div></div>
+
+        <div class="pad">
+          <div class="between" style="margin-bottom:2px">
+            <h3 style="font-size:21px">Referral Performance</h3>
+            <div class="row"><span class="btn s sm">Export ▾</span><span class="btn s sm">Settings</span></div></div>
+          <div class="xs muted" style="margin-bottom:16px">Attribution: last-click · window ends with each event</div>
+
+          <div class="card pad row" style="gap:8px;margin-bottom:16px;flex-wrap:wrap">
+            <span class="chip n">Event: All ▾</span><span class="chip n">Program: All ▾</span>
+            <span class="chip n">Dates: Last 30 days ▾</span><span class="chip n">Channel: All ▾</span>
+            <span class="chip n">Status: Active ▾</span>
+            <span class="xs" style="margin-left:auto;color:var(--primary)">Clear filters</span></div>
+
+          <div class="g4" style="margin-bottom:10px">
+            <div class="kpi"><div class="v">128</div><div class="l">Participants</div><div class="d">▲ 12</div></div>
+            <div class="kpi"><div class="v">4,821</div><div class="l">Referral clicks</div><div class="d">▲ 18%</div></div>
+            <div class="kpi"><div class="v">643</div><div class="l">Converted supporters</div><div class="d">▲ 9%</div></div>
+            <div class="kpi"><div class="v">13.3%</div><div class="l">Conversion rate</div></div>
+          </div>
+          <div class="g4" style="margin-bottom:10px">
+            <div class="kpi"><div class="v" style="color:var(--give)">$28,420</div><div class="l">Attributed donation revenue</div></div>
+            <div class="kpi"><div class="v" style="color:var(--tix)">$12,640</div><div class="l">Attributed ticket revenue</div></div>
+            <div class="kpi"><div class="v">412</div><div class="l">Attributed donations</div></div>
+            <div class="kpi"><div class="v">316</div><div class="l">Attributed ticket sales</div></div>
+          </div>
+          <div class="card pad sm" style="margin-bottom:18px;background:var(--sunken);border:0">
+            Total attributed revenue <b style="font-size:14px">$41,060</b> &nbsp;=&nbsp;
+            <span style="color:var(--give)">donations $28,420</span> &nbsp;+&nbsp;
+            <span style="color:var(--tix)">tickets $12,640</span></div>
+
+          <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:14px;margin-bottom:18px">
+            <div class="card pad">
+              <div class="between" style="margin-bottom:12px"><h4>Revenue over time</h4>
+                <div class="row xs muted" style="gap:12px">
+                  <span><i style="display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--give)"></i> donations</span>
+                  <span><i style="display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--tix)"></i> tickets</span></div></div>
+              <div class="chart">
+                <i style="height:26%"></i><i class="t" style="height:15%"></i><i style="height:48%"></i>
+                <i style="height:36%"></i><i class="t" style="height:23%"></i><i style="height:66%"></i>
+                <i style="height:84%"></i><i class="t" style="height:31%"></i><i style="height:58%"></i>
+                <i style="height:44%"></i><i class="t" style="height:20%"></i><i style="height:72%"></i>
+                <i style="height:52%"></i><i class="t" style="height:28%"></i><i style="height:90%"></i>
+              </div>
+            </div>
+            <div class="card pad">
+              <h4 style="margin-bottom:12px">Channels by revenue</h4>
+              <div style="display:grid;gap:11px">
+                <div><div class="between sm"><span>WhatsApp</span><b>$18,240</b></div><div class="bar" style="margin-top:5px"><i style="width:100%"></i></div></div>
+                <div><div class="between sm"><span>Facebook</span><b>$8,900</b></div><div class="bar" style="margin-top:5px"><i style="width:49%;background:#4E86E8"></i></div></div>
+                <div><div class="between sm"><span>Email</span><b>$5,120</b></div><div class="bar" style="margin-top:5px"><i style="width:28%;background:#7FA7EE"></i></div></div>
+                <div><div class="between sm"><span>LinkedIn</span><b>$3,400</b></div><div class="bar" style="margin-top:5px"><i style="width:19%;background:#A9C4F4"></i></div></div>
+                <div><div class="between sm"><span>QR code</span><b>$1,900</b></div><div class="bar" style="margin-top:5px"><i style="width:11%;background:#CFDFFB"></i></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tabs"><span class="on">External supporters (119)</span><span>Staff / internal (9)</span></div>
+          <div class="between" style="padding:12px 0">
+            <div class="row"><span class="chip n">🔍 Search participants…</span></div>
+            <div class="row xs muted"><span>Sort: Donation amount ▾</span><span>Columns ▾</span><span>Showing 1–3 of 119</span></div>
+          </div>
+
+          <table class="t">
+            <tr><th>#</th><th>Participant</th><th>Type</th><th class="n">Clicks</th><th class="n">People</th>
+              <th class="n">Donations</th><th class="n">Amount</th><th class="n">Tickets</th><th class="n">Ticket revenue</th>
+              <th class="n">Conv.</th><th>Last activity</th></tr>
+            <tr><td>1</td>
+              <td><div class="row"><span class="av sm">SA</span>
+                <div><div style="font-weight:600">Sarah Ahmed</div><div class="xs muted">sarah@example.com · 3 events</div></div></div></td>
+              <td><span class="chip b">External</span></td>
+              <td class="n">184</td><td class="n">21</td><td class="n">18</td>
+              <td class="n" style="color:var(--give);font-weight:700">$2,450</td>
+              <td class="n">8</td><td class="n" style="color:var(--tix);font-weight:700">$640</td>
+              <td class="n">11.4%</td><td class="xs muted">Today</td></tr>
+            <tr><td>2</td>
+              <td><div class="row"><span class="av sm" style="background:#5B6879">AA</span>
+                <div><div style="font-weight:600">Ahmed Ali</div><div class="xs muted">ahmed@example.com · 2 events</div></div></div></td>
+              <td><span class="chip b">External</span></td>
+              <td class="n">150</td><td class="n">17</td><td class="n">14</td>
+              <td class="n" style="color:var(--give);font-weight:700">$1,980</td>
+              <td class="n">4</td><td class="n" style="color:var(--tix);font-weight:700">$320</td>
+              <td class="n">11.3%</td><td class="xs muted">Yesterday</td></tr>
+            <tr><td>3</td>
+              <td><div class="row"><span class="av sm" style="background:#7A8798">LM</span>
+                <div><div style="font-weight:600">Layla Mansour</div><div class="xs muted">layla@example.com · 1 event</div></div></div></td>
+              <td><span class="chip b">External</span></td>
+              <td class="n">121</td><td class="n">11</td><td class="n">9</td>
+              <td class="n" style="color:var(--give);font-weight:700">$1,240</td>
+              <td class="n">6</td><td class="n" style="color:var(--tix);font-weight:700">$480</td>
+              <td class="n">9.1%</td><td class="xs muted">2 days ago</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+    <p class="cap">لوحة المنظّم الكاملة — الفلاتر والمؤشرات والرسوم وجدول الترتيب</p>
+  </div>
+
+  <ul class="notes">
+    <li><b>تبديل التبويب</b> يعيد حساب بطاقات المؤشرات أيضًا حتى لا تتناقض الأرقام</li>
+    <li><b>لا يوجد أي عرض افتراضي</b> يجمع الموظفين مع الداعمين الخارجيين</li>
+    <li>الفلاتر محفوظة في الرابط فيمكن مشاركة العرض كما هو</li>
+  </ul>
+</section>
+
+<!-- 8 -->
+<section class="step">
+  <div class="step-head"><div class="num">8</div>
+    <div><h2>ملف المشارك والتصدير</h2>
+    <p>لوحة جانبية تفتح فوق الجدول بلا فقدان الموضع، وتصدير بعمود ثابت جاهز للمالية ومجلس الإدارة.</p></div>
+  </div>
+
+  <div class="stage">
+    <div class="win" dir="ltr" style="min-height:520px">
+      <div class="chrome"><i class="dot"></i><i class="dot"></i><i class="dot"></i>
+        <div class="url">hopefdn.org/admin/referrals/participants/prt_8812</div></div>
+      <div class="ui" style="position:relative">
+        <div style="opacity:.35">
+          <div class="appbar"><div class="row"><span class="logo">H</span><b>Hope Foundation</b></div>
+            <div class="nav"><span class="on">Referrals</span><span>Reports</span></div><span class="av sm" style="background:#5B6879">MK</span></div>
+          <div class="pad">
+            <h3>Referral Performance</h3>
+            <div class="g4" style="margin:14px 0">
+              <div class="kpi"><div class="v">128</div><div class="l">Participants</div></div>
+              <div class="kpi"><div class="v">4,821</div><div class="l">Clicks</div></div>
+              <div class="kpi"><div class="v">643</div><div class="l">Converted</div></div>
+              <div class="kpi"><div class="v">13.3%</div><div class="l">Conversion</div></div>
+            </div>
+            <table class="t">
+              <tr><th>#</th><th>Participant</th><th class="n">Clicks</th><th class="n">Amount</th></tr>
+              <tr class="hl"><td>1</td><td>Sarah Ahmed</td><td class="n">184</td><td class="n">$2,450</td></tr>
+              <tr><td>2</td><td>Ahmed Ali</td><td class="n">150</td><td class="n">$1,980</td></tr>
+              <tr><td>3</td><td>Layla Mansour</td><td class="n">121</td><td class="n">$1,240</td></tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="drawer" style="left:auto;right:0;border-right:0;border-left:1px solid var(--line);
+          box-shadow:-14px 0 34px rgba(22,32,46,.16)">
+          <div class="pad">
+            <div class="between" style="margin-bottom:16px"><h3>Sarah Ahmed</h3>
+              <div class="row muted"><span>⧉</span><span>✕</span></div></div>
+            <div class="row" style="gap:14px;margin-bottom:18px">
+              <span class="av lg">SA</span>
+              <div><span class="chip b">External supporter</span>
+                <div class="xs muted" style="margin-top:6px">sarah@example.com<br>Joined Jan 2025 · 3 events</div>
+                <div class="xs" style="color:var(--primary);margin-top:5px">View supporter record ›</div></div>
+            </div>
+
+            <div class="g3" style="margin-bottom:10px">
+              <div class="kpi" style="padding:10px 11px"><div class="v" style="font-size:18px;color:var(--give)">$2,450</div><div class="l">Donations</div></div>
+              <div class="kpi" style="padding:10px 11px"><div class="v" style="font-size:18px;color:var(--tix)">$640</div><div class="l">Tickets</div></div>
+              <div class="kpi" style="padding:10px 11px"><div class="v" style="font-size:18px">$3,090</div><div class="l">Total</div></div>
+            </div>
+            <div class="g3" style="margin-bottom:10px">
+              <div class="kpi" style="padding:10px 11px"><div class="v" style="font-size:16px">184</div><div class="l">Clicks</div></div>
+              <div class="kpi" style="padding:10px 11px"><div class="v" style="font-size:16px">21</div><div class="l">People</div></div>
+              <div class="kpi" style="padding:10px 11px"><div class="v" style="font-size:16px">11.4%</div><div class="l">Conversion</div></div>
+            </div>
+            <div class="xs muted" style="margin-bottom:16px">First activity 4 Jan · last activity today</div>
+
+            <div class="tabs" style="margin-bottom:12px"><span class="on">Events</span><span>Channels</span><span>Links</span><span>Activity</span></div>
+            <table class="t">
+              <tr><td>Ramadan Charity Dinner<div class="xs muted">7 people · 43 clicks</div></td>
+                <td class="n" style="color:var(--give);font-weight:600">$740</td><td class="n muted">›</td></tr>
+              <tr><td>School Fundraising Event<div class="xs muted">9 people · 62 clicks</div></td>
+                <td class="n" style="color:var(--give);font-weight:600">$980</td><td class="n muted">›</td></tr>
+              <tr><td>Food Donation Campaign<div class="xs muted">5 people · 79 clicks</div></td>
+                <td class="n" style="color:var(--give);font-weight:600">$730</td><td class="n muted">›</td></tr>
+            </table>
+
+            <div class="row" style="gap:8px;margin-top:18px">
+              <span class="btn s sm" style="flex:1">Export this participant</span>
+              <span class="btn s sm" style="flex:1">Disable links</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="cap">لوحة تفاصيل المشارك — تفتح فوق الجدول ولها رابط دائم</p>
+  </div>
+
+  <div class="stage">
+    <div class="win sm" dir="ltr" style="min-height:470px">
+      <div class="chrome"><i class="dot"></i><i class="dot"></i><i class="dot"></i>
+        <div class="url">hopefdn.org/admin/referrals</div></div>
+      <div class="ui" style="filter:blur(1.5px);opacity:.55">
+        <div class="appbar"><div class="row"><span class="logo">H</span><b>Hope Foundation</b></div><span class="av sm" style="background:#5B6879">MK</span></div>
+        <div class="pad"><h3>Referral Performance</h3>
+          <div class="g4" style="margin-top:14px">
+            <div class="kpi"><div class="v">128</div><div class="l">Participants</div></div>
+            <div class="kpi"><div class="v">4,821</div><div class="l">Clicks</div></div>
+            <div class="kpi"><div class="v">643</div><div class="l">Converted</div></div>
+            <div class="kpi"><div class="v">13.3%</div><div class="l">Conversion</div></div></div></div>
+      </div>
+      <div class="overlay">
+        <div class="card" style="width:520px;border-radius:18px;box-shadow:0 24px 60px rgba(16,32,46,.35)">
+          <div class="pad between" style="border-bottom:1px solid var(--line)">
+            <h3>Export referral report</h3><span class="muted">✕</span></div>
+          <div class="pad">
+            <h4 style="margin-bottom:9px">Format</h4>
+            <div class="row" style="gap:9px;margin-bottom:18px">
+              <span class="btn p sm" style="flex:1">CSV</span><span class="btn s sm" style="flex:1">Excel (.xlsx)</span></div>
+
+            <h4 style="margin-bottom:9px">What to include</h4>
+            <div style="display:grid;gap:7px;margin-bottom:18px">
+              <div class="card pad between sm" style="padding:10px 13px"><span>✓ &nbsp;Participant summary</span><span class="xs muted">119 rows</span></div>
+              <div class="card pad between sm slate" style="padding:10px 13px"><span>&nbsp; &nbsp;Per-event breakdown</span><span class="xs muted">287 rows</span></div>
+              <div class="card pad between sm slate" style="padding:10px 13px"><span>&nbsp; &nbsp;Per-channel breakdown</span><span class="xs muted">642 rows</span></div>
+              <div class="card pad between sm slate" style="padding:10px 13px"><span>&nbsp; &nbsp;Individual attributions</span><span class="xs muted">1,204 rows</span></div>
+            </div>
+
+            <h4 style="margin-bottom:9px">Participants</h4>
+            <div class="row" style="gap:9px;margin-bottom:18px">
+              <span class="btn p sm" style="flex:1">External only</span>
+              <span class="btn s sm" style="flex:1">Staff only</span>
+              <span class="btn s sm" style="flex:1">Both, separate sheets</span></div>
+
+            <div class="card pad sm slate" style="background:var(--sunken);border:0;margin-bottom:16px">
+              Using your current filters: Ramadan Charity Dinner · 1–31 Mar 2026 · all channels · active links</div>
+            <div class="xs muted" style="margin-bottom:16px">Exports never include donor names, emails or payment details.</div>
+            <div class="row" style="gap:9px;justify-content:flex-end">
+              <span class="btn s sm">Cancel</span><span class="btn p sm">Export 119 rows</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="cap">نافذة التصدير — عدد الصفوف يتغيّر مع كل اختيار</p>
+  </div>
+</section>
+
+<!-- 9 -->
+<section class="step">
+  <div class="step-head"><div class="num">9</div>
+    <div><h2>إعدادات المؤسسة والقواعد الحاكمة</h2>
+    <p>مفاتيح التحكم للمسؤول، وثلاث قواعد تجعل كل رقم قابلًا للشرح أمام مجلس الإدارة.</p></div>
+  </div>
+
+  <div class="stage">
+    <div class="win sm" dir="ltr">
+      <div class="chrome"><i class="dot"></i><i class="dot"></i><i class="dot"></i>
+        <div class="url">hopefdn.org/admin/settings/referrals</div></div>
+      <div class="ui pad">
+        <div class="between" style="margin-bottom:4px"><h3>Referral tracking</h3><span class="chip g">Growth plan ✓</span></div>
+        <div class="sm slate" style="margin-bottom:18px">Let supporters share your events and see what their invitations raise.</div>
+
+        <div class="card" style="overflow:hidden">
+          <div class="pad between" style="border-bottom:1px solid var(--line)">
+            <div><h4>Referral tracking</h4>
+              <div class="xs muted" style="margin-top:2px">When off, share buttons are hidden. Existing results are kept.</div></div>
+            <span class="toggle"></span></div>
+          <div class="pad between" style="border-bottom:1px solid var(--line)">
+            <div><h4>General profile links</h4>
+              <div class="xs muted" style="margin-top:2px">hopefdn.org/ref/{code}</div></div><span class="toggle"></span></div>
+          <div class="pad between" style="border-bottom:1px solid var(--line)">
+            <div><h4>Staff and organizers can participate</h4>
+              <div class="xs muted" style="margin-top:2px">Staff results are always reported separately.</div></div>
+            <span class="toggle"></span></div>
+          <div class="pad between" style="border-bottom:1px solid var(--line)">
+            <div><h4>People without an account</h4>
+              <div class="xs muted" style="margin-top:2px">They'll give an email so we can show them their impact.</div></div>
+            <span class="toggle off"></span></div>
+          <div class="pad between" style="border-bottom:1px solid var(--line)">
+            <div><h4>QR codes</h4></div><span class="toggle"></span></div>
+          <div class="pad" style="border-bottom:1px solid var(--line)">
+            <h4 style="margin-bottom:9px">Attribution window</h4>
+            <div class="row" style="gap:9px;margin-bottom:8px">
+              <span class="btn p sm">Until the event or campaign ends</span>
+              <span class="btn s sm">Fixed number of days</span></div>
+            <div class="xs muted">Changes apply to new visits only. Existing attributions are unchanged.</div></div>
+          <div class="pad between">
+            <div><h4>Channel tracking</h4>
+              <div class="xs muted" style="margin-top:2px">Records which app a link was opened from, where available.</div></div>
+            <span class="toggle"></span></div>
+        </div>
+        <div class="between" style="margin-top:16px">
+          <span class="xs muted">Last changed by Mona K. on 2 Sep 2026</span>
+          <div class="row"><span class="btn s sm">Cancel</span><span class="btn p sm">Save changes</span></div></div>
+      </div>
+    </div>
+    <p class="cap">إعدادات الميزة — مرتبطة بخطة الاشتراك ومسجّلة في سجل التدقيق</p>
+  </div>
+
+  <div class="stage">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+      <div class="card pad">
+        <div class="chip b" style="margin-bottom:10px">آخر نقرة</div>
+        <div style="line-height:2;font-size:14px">
+          فتح رابط سارة<br>← ثم فتح رابط أحمد<br>← ثم تبرّع<br>
+          <b style="color:var(--primary)">النتيجة: أحمد يأخذ التبرع كاملًا</b></div>
+      </div>
+      <div class="card pad">
+        <div class="chip w" style="margin-bottom:10px">لا إحالة ذاتية</div>
+        <div style="line-height:2;font-size:14px">
+          سارة تفتح رابطها بنفسها<br>← وتتبرّع<br>
+          <b style="color:var(--warn)">النتيجة: لا نقرة ولا تبرّع يُحتسب لها</b></div>
+      </div>
+      <div class="card pad">
+        <div class="chip g" style="margin-bottom:10px">معاملات متكررة</div>
+        <div style="line-height:2;font-size:14px">
+          يوم ١: تبرع ‎$100<br>يوم ١٠: تبرع ‎$50<br>يوم ١٥: تذاكر ‎$40<br>
+          <b style="color:var(--give)">٣ معاملات · شخص واحد محوَّل</b></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rule"><b>مدة الاحتساب:</b> الإحالة تظل فعّالة حتى تنتهي الفعالية أو الحملة، والمعمارية تسمح بجعلها قابلة للضبط لاحقًا.</div>
+</section>
+
+<section class="outro">
+  <h2>الرحلة كاملة في سطر</h2>
+  <div class="flowline">
+    <span>يفتح الفعالية</span><b>←</b>
+    <span>يضغط شارك</span><b>←</b>
+    <span>يختار القناة</span><b>←</b>
+    <span>الصديق يفتح الرابط</span><b>←</b>
+    <span>يتصفّح ويسجّل الدخول</span><b>←</b>
+    <span>يتبرع أو يشتري تذاكر</span><b>←</b>
+    <span>يُنسب التبرع لآخر رابط</span><b>←</b>
+    <span>تتحدّث لوحة المشارك</span><b>←</b>
+    <span>تتحدّث لوحة المنظّم</span><b>←</b>
+    <span>يصل الإشعار</span>
+  </div>
+</section>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,1684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fundraising Events v2.0 — Dashboard Mockups (Matching Real UI)</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+  body { background: #e9ecef; padding: 40px 20px; color: #333; }
+
+  /* ============ SCREEN WRAPPER ============ */
+  .screen-wrap {
+    max-width: 1400px;
+    margin: 0 auto 60px;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+  }
+  .screen-label {
+    background: #1a1f36;
+    color: #fff;
+    padding: 16px 28px;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .screen-label .badge-num {
+    background: #4ade80;
+    color: #064e3b;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    font-weight: 800;
+  }
+
+  .dashboard-shell { display: flex; height: 720px; overflow: hidden; }
+
+  /* ============ SIDEBAR ============ */
+  .sidebar {
+    width: 240px;
+    background: #fcfcfc;
+    border-right: 1px solid #e9ecef;
+    display: flex;
+    flex-direction: column;
+    padding: 12px 0;
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+  .sidebar ul { list-style: none; }
+  .sidebar li {
+    padding: 10px 22px;
+    font-size: 13.5px;
+    color: #495057;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .sidebar li:hover { background: #f1f3f5; }
+  .sidebar li.active {
+    background: #e9ecef;
+    color: #212529;
+    font-weight: 600;
+    border-left: 4px solid #2d3a6b;
+    padding-left: 18px;
+  }
+  .sidebar li.logout { color: #dc3545; }
+  .sidebar li i { width: 16px; text-align: center; font-size: 14px; }
+  .sidebar li.sub { padding-left: 52px; font-size: 13px; }
+  .sidebar li.sub.active { border-left: 4px solid #2d3a6b; padding-left: 48px; }
+
+  /* ============ MAIN ============ */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: #fff; }
+
+  .topbar {
+    padding: 14px 24px;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  .search-box { flex: 0 0 300px; position: relative; }
+  .search-box input {
+    width: 100%;
+    padding: 9px 14px 9px 36px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 13px;
+    outline: none;
+    background: #f8f9fa;
+  }
+  .search-box input:focus { border-color: #2d3a6b; background: #fff; }
+  .search-box i { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: #adb5bd; font-size: 13px; }
+
+  .topbar-spacer { flex: 1; }
+  .btn {
+    padding: 9px 16px;
+    border-radius: 6px;
+    border: 1px solid #ced4da;
+    background: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    color: #495057;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .btn:hover { background: #f1f3f5; }
+  .btn.primary { background: #28a745; color: #fff; border-color: #28a745; }
+  .btn.primary:hover { background: #218838; }
+  .btn.link { border: none; background: none; color: #28a745; padding: 9px 8px; }
+  .btn.link:hover { color: #218838; background: none; }
+  .btn.danger { background: #dc3545; color: #fff; border-color: #dc3545; }
+  .btn.danger:hover { background: #c82333; }
+  .btn.small { padding: 6px 12px; font-size: 12px; }
+
+  /* ============ CONTENT ============ */
+  .content { flex: 1; overflow-y: auto; padding: 20px 24px; }
+
+  /* Page header */
+  .page-title { font-size: 20px; font-weight: 700; color: #212529; margin-bottom: 6px; }
+  .page-sub { font-size: 13px; color: #6c757d; margin-bottom: 20px; }
+
+  /* KPI Cards */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .kpi {
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    padding: 18px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .kpi .kpi-info { display: flex; flex-direction: column; }
+  .kpi .kpi-label { font-size: 12px; color: #6c757d; margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
+  .kpi .kpi-value { font-size: 24px; font-weight: 800; color: #212529; line-height: 1; }
+  .kpi .kpi-icon {
+    width: 48px; height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+  }
+  .kpi .kpi-icon.green { background: #d4edda; color: #155724; }
+  .kpi .kpi-icon.blue  { background: #d1ecf1; color: #0c5460; }
+  .kpi .kpi-icon.amber { background: #fff3cd; color: #856404; }
+  .kpi .kpi-icon.purple{ background: #e2d9f3; color: #432874; }
+
+  /* ============ TABLE ============ */
+  .table-wrapper { background: #fff; border-radius: 10px; border: 1px solid #e9ecef; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th {
+    text-align: left;
+    padding: 12px 14px;
+    color: #495057;
+    font-weight: 700;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #e9ecef;
+    background: #f8f9fa;
+    white-space: nowrap;
+  }
+  tbody td { padding: 13px 14px; border-bottom: 1px solid #f1f3f5; color: #495057; vertical-align: middle; }
+  tbody tr:hover { background: #f8f9fa; }
+  tbody tr:last-child td { border-bottom: none; }
+  input[type="checkbox"] { width: 16px; height: 16px; accent-color: #2d3a6b; cursor: pointer; }
+
+  /* Badges */
+  .badge { padding: 4px 10px; border-radius: 4px; font-size: 11.5px; font-weight: 700; display: inline-block; }
+  .badge.draft { background: #fff3cd; color: #856404; }
+  .badge.published { background: #d4edda; color: #155724; }
+  .badge.checked { background: #d1ecf1; color: #0c5460; }
+  .badge.refunded { background: #f8d7da; color: #721c24; }
+  .badge.zakat { background: #e2d9f3; color: #432874; }
+  .badge.recurring { background: #d4edda; color: #155724; }
+  .badge.offline { background: #fde2e4; color: #9d2235; }
+  .badge.online { background: #d1ecf1; color: #0c5460; }
+
+  /* Icon buttons in tables */
+  .icon-btn {
+    background: none;
+    border: none;
+    color: #6c757d;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 6px 8px;
+    border-radius: 5px;
+    transition: all 0.15s;
+  }
+  .icon-btn:hover { background: #f1f3f5; color: #2d3a6b; }
+  .icon-btn.green:hover { background: #d4edda; color: #155724; }
+  .icon-btn.red:hover { background: #f8d7da; color: #721c24; }
+
+  /* Charts */
+  .chart-row { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .chart-card {
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .chart-card h3 { font-size: 14px; font-weight: 700; color: #212529; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+  .chart-card h3 small { font-size: 12px; color: #6c757d; font-weight: 500; }
+
+  .bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 140px; padding-bottom: 20px; position: relative; }
+  .bar-chart .bar { flex: 1; background: linear-gradient(180deg, #2d3a6b 0%, #4a5a9e 100%); border-radius: 4px 4px 0 0; position: relative; }
+  .bar-chart .bar-label { position: absolute; bottom: -22px; left: 0; right: 0; text-align: center; font-size: 10.5px; color: #6c757d; }
+
+  .pie-chart {
+    width: 130px; height: 130px;
+    border-radius: 50%;
+    background: conic-gradient(#28a745 0% 65%, #e2d9f3 65% 100%);
+    margin: 0 auto 14px;
+    position: relative;
+  }
+  .pie-chart::after {
+    content: "";
+    position: absolute;
+    inset: 22px;
+    background: #fff;
+    border-radius: 50%;
+  }
+  .pie-legend { text-align: center; font-size: 12px; color: #495057; }
+  .pie-legend span { display: inline-flex; align-items: center; gap: 5px; margin: 0 6px; }
+  .pie-legend .dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  /* Progress bars */
+  .progress-block { margin-bottom: 16px; }
+  .progress-block .pb-label { display: flex; justify-content: space-between; font-size: 12.5px; font-weight: 600; color: #495057; margin-bottom: 6px; }
+  .progress-block .pb-label small { color: #6c757d; font-weight: 500; }
+  .progress-bar { background: #e9ecef; border-radius: 20px; height: 10px; overflow: hidden; }
+  .progress-bar .fill { height: 100%; border-radius: 20px; transition: width 0.3s; }
+  .progress-bar .fill.green { background: linear-gradient(90deg, #28a745, #4ade80); }
+  .progress-bar .fill.gray  { background: linear-gradient(90deg, #6c757d, #adb5bd); }
+
+  /* Form grid */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group label { font-size: 12.5px; font-weight: 600; color: #495057; }
+  .form-group input, .form-group select, .form-group textarea {
+    padding: 9px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #495057;
+    background: #f8f9fa;
+    outline: none;
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #2d3a6b; background: #fff; }
+  .form-group input:disabled, .form-group select:disabled { opacity: 0.5; cursor: not-allowed; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-group .helper { font-size: 11px; color: #6c757d; }
+
+  /* Modal overlay inside a screen */
+  .modal-scene {
+    position: relative;
+    height: 100%;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+  }
+  .modal {
+    background: #fff;
+    width: 700px;
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 10px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    padding: 24px 28px;
+    overflow-y: auto;
+  }
+  .modal.narrow { width: 480px; }
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #e9ecef;
+  }
+  .modal-header h2 { font-size: 17px; font-weight: 700; color: #212529; }
+  .modal-header .close { background: none; border: none; font-size: 18px; color: #adb5bd; cursor: pointer; }
+  .modal-header .close:hover { color: #dc3545; }
+  .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; padding-top: 16px; border-top: 1px solid #e9ecef; }
+
+  /* Drag & drop builder */
+  .dnd-list { display: flex; flex-direction: column; gap: 10px; }
+  .dnd-item {
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: grab;
+    transition: all 0.15s;
+  }
+  .dnd-item:hover { border-color: #2d3a6b; box-shadow: 0 2px 8px rgba(45,58,107,0.08); }
+  .dnd-item.dragging {
+    border-style: dashed;
+    border-color: #2d3a6b;
+    background: #eef2ff;
+    transform: rotate(-0.5deg);
+    box-shadow: 0 8px 24px rgba(45,58,107,0.15);
+  }
+  .dnd-handle { color: #adb5bd; font-size: 16px; cursor: grab; }
+  .dnd-item .dnd-info { flex: 1; }
+  .dnd-item .dnd-info strong { display: block; font-size: 14px; color: #212529; margin-bottom: 2px; }
+  .dnd-item .dnd-info small { color: #6c757d; font-size: 12px; }
+  .dnd-item .dnd-price { font-weight: 700; color: #28a745; font-size: 14px; }
+
+  /* QR check-in screen */
+  .qr-scene {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    height: 100%;
+  }
+  .qr-scanner-box {
+    background: #1a1f36;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+  }
+  .qr-frame {
+    width: 200px; height: 200px;
+    border: 3px solid #4ade80;
+    border-radius: 12px;
+    position: relative;
+    margin-bottom: 20px;
+  }
+  .qr-frame::before, .qr-frame::after {
+    content: "";
+    position: absolute;
+    width: 30px; height: 30px;
+    border: 4px solid #4ade80;
+  }
+  .qr-frame::before { top: -4px; left: -4px; border-right: none; border-bottom: none; border-radius: 12px 0 0 0; }
+  .qr-frame::after { bottom: -4px; right: -4px; border-left: none; border-top: none; border-radius: 0 0 12px 0; }
+  .scan-line {
+    position: absolute;
+    left: 10px; right: 10px;
+    height: 3px;
+    background: #4ade80;
+    box-shadow: 0 0 12px #4ade80;
+    animation: scan 2s infinite;
+  }
+  @keyframes scan {
+    0%, 100% { top: 20px; }
+    50% { top: 175px; }
+  }
+  .qr-recent { display: flex; flex-direction: column; gap: 10px; }
+  .qr-recent h3 { font-size: 14px; font-weight: 700; color: #212529; margin-bottom: 6px; }
+  .qr-result {
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-left: 4px solid;
+    border-radius: 8px;
+    padding: 12px 14px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .qr-result.success { border-left-color: #28a745; }
+  .qr-result.warn    { border-left-color: #f59e0b; }
+  .qr-result.danger  { border-left-color: #dc3545; }
+  .qr-result .qr-icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+  }
+  .qr-result.success .qr-icon { background: #d4edda; color: #155724; }
+  .qr-result.warn    .qr-icon { background: #fff3cd; color: #856404; }
+  .qr-result.danger  .qr-icon { background: #f8d7da; color: #721c24; }
+  .qr-result .qr-info strong { display: block; font-size: 13px; color: #212529; margin-bottom: 2px; }
+  .qr-result .qr-info small { font-size: 11.5px; color: #6c757d; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid #e9ecef; margin-bottom: 20px; }
+  .tabs .tab {
+    padding: 10px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #6c757d;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.15s;
+  }
+  .tabs .tab:hover { color: #2d3a6b; }
+  .tabs .tab.active { color: #2d3a6b; border-bottom-color: #2d3a6b; }
+
+  /* Inline toolbar */
+  .toolbar-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 12px; flex-wrap: wrap; }
+  .toolbar-row .tl-left { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .toolbar-row .tl-right { display: flex; gap: 8px; align-items: center; }
+
+  /* Small statistic card */
+  .stat-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+  .stat-mini { background: #f8f9fa; border-radius: 8px; padding: 14px 16px; border-left: 4px solid #2d3a6b; }
+  .stat-mini .sm-label { font-size: 11.5px; color: #6c757d; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 4px; }
+  .stat-mini .sm-value { font-size: 20px; font-weight: 800; color: #212529; }
+</style>
+</head>
+<body>
+
+<!-- ==================================================================== -->
+<!-- SCREEN 1 — Fundraising Events List (Base with Export)               -->
+<!-- ==================================================================== -->
+<div class="screen-wrap">
+  <div class="screen-label">
+    <span>Screen 1 · Fundraising Events List — Base + Data Export Button</span>
+    <span class="badge-num">v2.0 BASE</span>
+  </div>
+
+  <div class="dashboard-shell">
+    <aside class="sidebar">
+      <ul>
+        <li><i class="fa-regular fa-user"></i> Profile</li>
+        <li><i class="fa-solid fa-users"></i> Users</li>
+        <li><i class="fa-solid fa-file-invoice"></i> My Billings</li>
+        <li><i class="fa-solid fa-layer-group"></i> Categories</li>
+        <li><i class="fa-solid fa-hand-holding-heart"></i> Programs</li>
+        <li><i class="fa-solid fa-newspaper"></i> Blog &amp; News</li>
+        <li><i class="fa-solid fa-file-lines"></i> Pages</li>
+        <li><i class="fa-solid fa-sliders"></i> Platform Customization</li>
+        <li><i class="fa-solid fa-key"></i> Permissions</li>
+        <li><i class="fa-solid fa-user-shield"></i> Admins</li>
+        <li><i class="fa-solid fa-credit-card"></i> Payment Settings</li>
+        <li><i class="fa-solid fa-rectangle-list"></i> Dynamic Forms</li>
+        <li><i class="fa-solid fa-chart-column"></i> menu reports</li>
+        <li class="active"><i class="fa-solid fa-calendar-star"></i> Fundraising Event</li>
+        <li class="logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</li>
+      </ul>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" placeholder="Search">
+        </div>
+        <div class="topbar-spacer"></div>
+        <button class="btn"><i class="fa-solid fa-filter"></i> Add Filter</button>
+        <button class="btn link">Reset</button>
+        <button class="btn"><i class="fa-solid fa-download"></i> Export</button>
+        <button class="btn primary"><i class="fa-solid fa-plus"></i> Create New Event</button>
+      </div>
+
+      <div class="content">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:40px;"><input type="checkbox"></th>
+              <th>Title</th>
+              <th>Language</th>
+              <th>Category</th>
+              <th>Country</th>
+              <th>City</th>
+              <th>Date</th>
+              <th>Status</th>
+              <th>Reservation</th>
+              <th>Raised Amount</th>
+              <th style="width:60px;"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><input type="checkbox"></td>
+              <td>QA399160 F...</td>
+              <td></td><td></td><td></td><td></td><td></td>
+              <td><span class="badge draft">Draft</span></td>
+              <td>0/0</td>
+              <td>CAD 0</td>
+              <td><button class="icon-btn"><i class="fa-solid fa-ellipsis-vertical"></i></button></td>
+            </tr>
+            <tr>
+              <td><input type="checkbox"></td>
+              <td>No ticket ...</td>
+              <td></td><td></td><td></td><td></td><td></td>
+              <td><span class="badge published">Published</span></td>
+              <td>-</td>
+              <td>CAD 0</td>
+              <td><button class="icon-btn"><i class="fa-solid fa-ellipsis-vertical"></i></button></td>
+            </tr>
+            <tr>
+              <td><input type="checkbox"></td>
+              <td>Gala Night 2026</td>
+              <td>English</td>
+              <td>Charity Gala</td>
+              <td>Canada</td>
+              <td>Toronto</td>
+              <td>9/27/2026</td>
+              <td><span class="badge published">Published</span></td>
+              <td>18/50</td>
+              <td><b>CAD 1,540</b></td>
+              <td><button class="icon-btn"><i class="fa-solid fa-ellipsis-vertical"></i></button></td>
+            </tr>
+            <tr>
+              <td><input type="checkbox"></td>
+              <td>Ramadan Iftar Drive</td>
+              <td>Arabic</td>
+              <td>Community</td>
+              <td>Canada</td>
+              <td>Mississauga</td>
+              <td>10/05/2026</td>
+              <td><span class="badge published">Published</span></td>
+              <td>120/200</td>
+              <td><b>CAD 5,800</b></td>
+              <td><button class="icon-btn"><i class="fa-solid fa-ellipsis-vertical"></i></button></td>
+            </tr>
+            <tr>
+              <td><input type="checkbox"></td>
+              <td>QA392671 F...</td>
+              <td></td><td></td><td></td><td></td><td></td>
+              <td><span class="badge draft">Draft</span></td>
+              <td>0/0</td>
+              <td>CAD 0</td>
+              <td><button class="icon-btn"><i class="fa-solid fa-ellipsis-vertical"></i></button></td>
+            </tr>
+            <tr>
+              <td><input type="checkbox"></td>
+              <td>QA392183 F...</td>
+              <td></td><td></td><td></td><td></td><td></td>
+              <td><span class="badge draft">Draft</span></td>
+              <td>0/0</td>
+              <td>CAD 0</td>
+              <td><button class="icon-btn"><i class="fa-solid fa-ellipsis-vertical"></i></button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</div>
+
+
+<!-- ==================================================================== -->
+<!-- SCREEN 2 — Event Summary Dashboard (KPIs + Charts)                  -->
+<!-- ==================================================================== -->
+<div class="screen-wrap">
+  <div class="screen-label">
+    <span>Screen 2 · Event Detail — Summary Cards + Donations Charts</span>
+    <span class="badge-num">NEW v2.0</span>
+  </div>
+
+  <div class="dashboard-shell">
+    <aside class="sidebar">
+      <ul>
+        <li><i class="fa-regular fa-user"></i> Profile</li>
+        <li><i class="fa-solid fa-users"></i> Users</li>
+        <li><i class="fa-solid fa-file-invoice"></i> My Billings</li>
+        <li><i class="fa-solid fa-layer-group"></i> Categories</li>
+        <li><i class="fa-solid fa-hand-holding-heart"></i> Programs</li>
+        <li><i class="fa-solid fa-newspaper"></i> Blog &amp; News</li>
+        <li><i class="fa-solid fa-file-lines"></i> Pages</li>
+        <li><i class="fa-solid fa-sliders"></i> Platform Customization</li>
+        <li><i class="fa-solid fa-key"></i> Permissions</li>
+        <li><i class="fa-solid fa-user-shield"></i> Admins</li>
+        <li><i class="fa-solid fa-credit-card"></i> Payment Settings</li>
+        <li><i class="fa-solid fa-rectangle-list"></i> Dynamic Forms</li>
+        <li><i class="fa-solid fa-chart-column"></i> menu reports</li>
+        <li class="active"><i class="fa-solid fa-calendar-star"></i> Fundraising Event</li>
+        <li class="sub active"><i class="fa-solid fa-gauge"></i> Dashboard</li>
+        <li class="sub"><i class="fa-solid fa-ticket"></i> Tickets</li>
+        <li class="sub"><i class="fa-solid fa-hand-holding-dollar"></i> Donations</li>
+        <li class="sub"><i class="fa-solid fa-tags"></i> Promo Codes</li>
+        <li class="logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</li>
+      </ul>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" placeholder="Search">
+        </div>
+        <div class="topbar-spacer"></div>
+        <button class="btn"><i class="fa-solid fa-arrow-left"></i> Back to Events</button>
+        <button class="btn"><i class="fa-solid fa-download"></i> Export</button>
+        <button class="btn primary"><i class="fa-solid fa-pen"></i> Edit Event</button>
+      </div>
+
+      <div class="content">
+        <h2 class="page-title">Gala Night 2026</h2>
+        <p class="page-sub">Sep 27, 2026 · Grand Hall, Toronto · Published</p>
+
+        <!-- KPI CARDS -->
+        <div class="kpi-grid">
+          <div class="kpi">
+            <div class="kpi-info">
+              <div class="kpi-label">Total Raised</div>
+              <div class="kpi-value">CAD 12,500</div>
+            </div>
+            <div class="kpi-icon green"><i class="fa-solid fa-dollar-sign"></i></div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-info">
+              <div class="kpi-label">Unique Donors</div>
+              <div class="kpi-value">87</div>
+            </div>
+            <div class="kpi-icon blue"><i class="fa-solid fa-users"></i></div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-info">
+              <div class="kpi-label">Attendees</div>
+              <div class="kpi-value">142</div>
+            </div>
+            <div class="kpi-icon amber"><i class="fa-solid fa-ticket"></i></div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-info">
+              <div class="kpi-label">Transactions</div>
+              <div class="kpi-value">96</div>
+            </div>
+            <div class="kpi-icon purple"><i class="fa-solid fa-check"></i></div>
+          </div>
+        </div>
+
+        <!-- CHARTS ROW -->
+        <div class="chart-row">
+          <div class="chart-card">
+            <h3>Donations Timeline <small>Last 7 days</small></h3>
+            <div class="bar-chart">
+              <div class="bar" style="height:40%"><span class="bar-label">Mon</span></div>
+              <div class="bar" style="height:65%"><span class="bar-label">Tue</span></div>
+              <div class="bar" style="height:80%"><span class="bar-label">Wed</span></div>
+              <div class="bar" style="height:55%"><span class="bar-label">Thu</span></div>
+              <div class="bar" style="height:95%"><span class="bar-label">Fri</span></div>
+              <div class="bar" style="height:72%"><span class="bar-label">Sat</span></div>
+              <div class="bar" style="height:88%"><span class="bar-label">Sun</span></div>
+            </div>
+          </div>
+          <div class="chart-card">
+            <h3>Zakat vs Non-Zakat</h3>
+            <div class="pie-chart"></div>
+            <div class="pie-legend">
+              <span><span class="dot" style="background:#28a745;"></span> Zakat 65%</span>
+              <span><span class="dot" style="background:#e2d9f3;"></span> Non-Zakat 35%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- PROGRESS BLOCK (Pledged vs Collected) -->
+        <div class="chart-card" style="margin-bottom: 20px;">
+          <h3>Pledged vs Collected <small>Fulfillment: 64.7%</small></h3>
+          <div class="progress-block">
+            <div class="pb-label">Pledged <span><b>CAD 8,500</b> / CAD 10,000</span></div>
+            <div class="progress-bar"><div class="fill gray" style="width:85%"></div></div>
+          </div>
+          <div class="progress-block" style="margin-bottom:0;">
+            <div class="pb-label">Collected <span><b>CAD 5,500</b></span></div>
+            <div class="progress-bar"><div class="fill green" style="width:55%"></div></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+
+<!-- ==================================================================== -->
+<!-- SCREEN 3 — Donations Records Table                                  -->
+<!-- ==================================================================== -->
+<div class="screen-wrap">
+  <div class="screen-label">
+    <span>Screen 3 · Donations Records Table — Full Donor Details + Zakat + Source</span>
+    <span class="badge-num">NEW v2.0</span>
+  </div>
+
+  <div class="dashboard-shell">
+    <aside class="sidebar">
+      <ul>
+        <li><i class="fa-regular fa-user"></i> Profile</li>
+        <li><i class="fa-solid fa-users"></i> Users</li>
+        <li><i class="fa-solid fa-file-invoice"></i> My Billings</li>
+        <li><i class="fa-solid fa-layer-group"></i> Categories</li>
+        <li><i class="fa-solid fa-hand-holding-heart"></i> Programs</li>
+        <li><i class="fa-solid fa-newspaper"></i> Blog &amp; News</li>
+        <li><i class="fa-solid fa-file-lines"></i> Pages</li>
+        <li><i class="fa-solid fa-sliders"></i> Platform Customization</li>
+        <li><i class="fa-solid fa-key"></i> Permissions</li>
+        <li><i class="fa-solid fa-user-shield"></i> Admins</li>
+        <li><i class="fa-solid fa-credit-card"></i> Payment Settings</li>
+        <li><i class="fa-solid fa-rectangle-list"></i> Dynamic Forms</li>
+        <li><i class="fa-solid fa-chart-column"></i> menu reports</li>
+        <li class="active"><i class="fa-solid fa-calendar-star"></i> Fundraising Event</li>
+        <li class="sub"><i class="fa-solid fa-gauge"></i> Dashboard</li>
+        <li class="sub"><i class="fa-solid fa-ticket"></i> Tickets</li>
+        <li class="sub active"><i class="fa-solid fa-hand-holding-dollar"></i> Donations</li>
+        <li class="sub"><i class="fa-solid fa-tags"></i> Promo Codes</li>
+        <li class="logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</li>
+      </ul>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" placeholder="Search by donor name or email">
+        </div>
+        <div class="topbar-spacer"></div>
+        <button class="btn"><i class="fa-solid fa-filter"></i> Filter</button>
+        <button class="btn link">Reset</button>
+        <button class="btn"><i class="fa-solid fa-download"></i> Export CSV</button>
+        <button class="btn primary"><i class="fa-solid fa-plus"></i> Add Offline Donation</button>
+      </div>
+
+      <div class="content">
+        <!-- Tabs -->
+        <div class="tabs">
+          <div class="tab active">All Donations</div>
+          <div class="tab">Online</div>
+          <div class="tab">Recurring</div>
+          <div class="tab">Offline</div>
+        </div>
+
+        <!-- Mini Stats -->
+        <div class="stat-cards">
+          <div class="stat-mini">
+            <div class="sm-label">Total Donations</div>
+            <div class="sm-value">CAD 12,500</div>
+          </div>
+          <div class="stat-mini" style="border-left-color:#28a745;">
+            <div class="sm-label">Zakat</div>
+            <div class="sm-value">CAD 8,125</div>
+          </div>
+          <div class="stat-mini" style="border-left-color:#e2d9f3;">
+            <div class="sm-label">Recurring Donors</div>
+            <div class="sm-value">15</div>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:40px;"><input type="checkbox"></th>
+                <th>Donor</th>
+                <th>Email</th>
+                <th>Amount</th>
+                <th>Zakat</th>
+                <th>Source</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th style="width:60px;"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><input type="checkbox"></td>
+                <td><b>Sara Ahmed</b></td>
+                <td>sara@example.com</td>
+                <td><b>CAD 50.00</b></td>
+                <td><span class="badge zakat">Zakat</span></td>
+                <td><span class="badge online">Online</span></td>
+                <td><span class="badge published">Completed</span></td>
+                <td>Aug 10, 2026</td>
+                <td><button class="icon-btn"><i class="fa-solid fa-ellipsis-vertical"></i></button></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox"></td>
+                <td><b>Omar Khalid</b></td>
+                <td>omar@example.com</td>
+                <td><b>CAD 100.00</b></td>
+                <td>—</td>
+                <td><span class="badge recurring">Recurring · Monthly</span></td>
+                <td><span class="badge published">Completed</span></td>
+                <td>Aug 10, 2026</td>
+                <td><button class="icon-btn"><i class="fa-solid fa-ellipsis-vertical"></i></button></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox"></td>
+                <td><b>Cash Donor</b></td>
+                <td>—</td>
+                <td><b>CAD 200.00</b></td>
+                <td><span class="badge zakat">Zakat</span></td>
+                <td><span class="badge offline">Offline</span></td>
+                <td><span class="badge published">Completed</span></td>
+                <td>Aug 09, 2026</td>
+                <td><button class="icon-btn"><i class="fa-solid fa-ellipsis-vertical"></i></button></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox"></td>
+                <td><b>Layla Hassan</b></td>
+                <td>layla@example.com</td>
+                <td><b>CAD 75.00</b></td>
+                <td>—</td>
+                <td><span class="badge online">Online</span></td>
+                <td><span class="badge refunded">Refunded</span></td>
+                <td>Aug 08, 2026</td>
+                <td><button class="icon-btn"><i class="fa-solid fa-ellipsis-vertical"></i></button></td>
+              </tr>
+              <tr>
+                <td><input type="checkbox"></td>
+                <td><b>Ahmed Nabil</b></td>
+                <td>ahmed@example.com</td>
+                <td><b>CAD 500.00</b></td>
+                <td>—</td>
+                <td><span class="badge online">Online</span></td>
+                <td><span class="badge published">Completed</span></td>
+                <td>Aug 07, 2026</td>
+                <td><button class="icon-btn"><i class="fa-solid fa-ellipsis-vertical"></i></button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+
+<!-- ==================================================================== -->
+<!-- SCREEN 4 — Tickets List (Admin) with Refund + Check-in Actions      -->
+<!-- ==================================================================== -->
+<div class="screen-wrap">
+  <div class="screen-label">
+    <span>Screen 4 · Tickets List — Check-in Status, Refund Action, Filters</span>
+    <span class="badge-num">NEW v2.0</span>
+  </div>
+
+  <div class="dashboard-shell">
+    <aside class="sidebar">
+      <ul>
+        <li><i class="fa-regular fa-user"></i> Profile</li>
+        <li><i class="fa-solid fa-users"></i> Users</li>
+        <li><i class="fa-solid fa-file-invoice"></i> My Billings</li>
+        <li><i class="fa-solid fa-layer-group"></i> Categories</li>
+        <li><i class="fa-solid fa-hand-holding-heart"></i> Programs</li>
+        <li><i class="fa-solid fa-newspaper"></i> Blog &amp; News</li>
+        <li><i class="fa-solid fa-file-lines"></i> Pages</li>
+        <li><i class="fa-solid fa-sliders"></i> Platform Customization</li>
+        <li><i class="fa-solid fa-key"></i> Permissions</li>
+        <li><i class="fa-solid fa-user-shield"></i> Admins</li>
+        <li><i class="fa-solid fa-credit-card"></i> Payment Settings</li>
+        <li><i class="fa-solid fa-rectangle-list"></i> Dynamic Forms</li>
+        <li><i class="fa-solid fa-chart-column"></i> menu reports</li>
+        <li class="active"><i class="fa-solid fa-calendar-star"></i> Fundraising Event</li>
+        <li class="sub"><i class="fa-solid fa-gauge"></i> Dashboard</li>
+        <li class="sub active"><i class="fa-solid fa-ticket"></i> Tickets</li>
+        <li class="sub"><i class="fa-solid fa-hand-holding-dollar"></i> Donations</li>
+        <li class="sub"><i class="fa-solid fa-tags"></i> Promo Codes</li>
+        <li class="logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</li>
+      </ul>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" placeholder="Search by code, holder name or email">
+        </div>
+        <div class="topbar-spacer"></div>
+        <button class="btn"><i class="fa-solid fa-qrcode"></i> Scan QR</button>
+        <button class="btn"><i class="fa-solid fa-download"></i> Export</button>
+        <button class="btn primary"><i class="fa-solid fa-plus"></i> Issue Manual Ticket</button>
+      </div>
+
+      <div class="content">
+        <div class="stat-cards">
+          <div class="stat-mini">
+            <div class="sm-label">Tickets Sold</div>
+            <div class="sm-value">120</div>
+          </div>
+          <div class="stat-mini" style="border-left-color:#28a745;">
+            <div class="sm-label">Checked-in</div>
+            <div class="sm-value">45</div>
+          </div>
+          <div class="stat-mini" style="border-left-color:#f59e0b;">
+            <div class="sm-label">Revenue</div>
+            <div class="sm-value">CAD 6,000</div>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:40px;"><input type="checkbox"></th>
+                <th>Code</th>
+                <th>Holder</th>
+                <th>Ticket Type</th>
+                <th>Price</th>
+                <th>Status</th>
+                <th>Purchased</th>
+                <th style="width:170px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><input type="checkbox"></td>
+                <td><code style="font-size:12px; color:#2d3a6b;">FT-01J2ZX8Q4R9WPT</code></td>
+                <td><b>A. Donor</b><br><small style="color:#6c757d;">a@x.com</small></td>
+                <td>VIP</td>
+                <td><b>CAD 100.00</b></td>
+                <td><span class="badge checked">Checked-in</span></td>
+                <td>Aug 10, 2026</td>
+                <td>
+                  <button class="icon-btn green" title="Check-in"><i class="fa-solid fa-check"></i></button>
+                  <button class="icon-btn red" title="Refund"><i class="fa-solid fa-rotate-left"></i></button>
+                  <button class="icon-btn" title="View"><i class="fa-solid fa-eye"></i></button>
+                </td>
+              </tr>
+              <tr>
+                <td><input type="checkbox"></td>
+                <td><code style="font-size:12px; color:#2d3a6b;">FT-01K3A9B2M8XQRT</code></td>
+                <td><b>Omar K.</b><br><small style="color:#6c757d;">omar@x.com</small></td>
+                <td>VIP</td>
+                <td><b>CAD 100.00</b></td>
+                <td><span class="badge published">Issued</span></td>
+                <td>Aug 10, 2026</td>
+                <td>
+                  <button class="icon-btn green" title="Check-in"><i class="fa-solid fa-check"></i></button>
+                  <button class="icon-btn red" title="Refund"><i class="fa-solid fa-rotate-left"></i></button>
+                  <button class="icon-btn" title="View"><i class="fa-solid fa-eye"></i></button>
+                </td>
+              </tr>
+              <tr>
+                <td><input type="checkbox"></td>
+                <td><code style="font-size:12px; color:#2d3a6b;">FT-01M4B7C3N5YRTW</code></td>
+                <td><b>Sara A.</b><br><small style="color:#6c757d;">sara@x.com</small></td>
+                <td>Regular</td>
+                <td><b>CAD 50.00</b></td>
+                <td><span class="badge refunded">Refunded</span></td>
+                <td>Aug 09, 2026</td>
+                <td>
+                  <button class="icon-btn" disabled style="opacity:.3;"><i class="fa-solid fa-check"></i></button>
+                  <button class="icon-btn" disabled style="opacity:.3;"><i class="fa-solid fa-rotate-left"></i></button>
+                  <button class="icon-btn" title="View"><i class="fa-solid fa-eye"></i></button>
+                </td>
+              </tr>
+              <tr>
+                <td><input type="checkbox"></td>
+                <td><code style="font-size:12px; color:#2d3a6b;">FT-01P5D8E4O7ZSVX</code></td>
+                <td><b>Layla H.</b><br><small style="color:#6c757d;">layla@x.com</small></td>
+                <td>Regular</td>
+                <td><b>CAD 50.00</b></td>
+                <td><span class="badge published">Issued</span></td>
+                <td>Aug 08, 2026</td>
+                <td>
+                  <button class="icon-btn green" title="Check-in"><i class="fa-solid fa-check"></i></button>
+                  <button class="icon-btn red" title="Refund"><i class="fa-solid fa-rotate-left"></i></button>
+                  <button class="icon-btn" title="View"><i class="fa-solid fa-eye"></i></button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+
+<!-- ==================================================================== -->
+<!-- SCREEN 5 — Event Builder with Drag & Drop Ticket Reordering         -->
+<!-- ==================================================================== -->
+<div class="screen-wrap">
+  <div class="screen-label">
+    <span>Screen 5 · Event Builder — Drag &amp; Drop Ticket Types Reorder</span>
+    <span class="badge-num">NEW v2.0</span>
+  </div>
+
+  <div class="dashboard-shell">
+    <aside class="sidebar">
+      <ul>
+        <li><i class="fa-regular fa-user"></i> Profile</li>
+        <li><i class="fa-solid fa-users"></i> Users</li>
+        <li><i class="fa-solid fa-file-invoice"></i> My Billings</li>
+        <li><i class="fa-solid fa-layer-group"></i> Categories</li>
+        <li><i class="fa-solid fa-hand-holding-heart"></i> Programs</li>
+        <li><i class="fa-solid fa-newspaper"></i> Blog &amp; News</li>
+        <li><i class="fa-solid fa-file-lines"></i> Pages</li>
+        <li><i class="fa-solid fa-sliders"></i> Platform Customization</li>
+        <li><i class="fa-solid fa-key"></i> Permissions</li>
+        <li><i class="fa-solid fa-user-shield"></i> Admins</li>
+        <li><i class="fa-solid fa-credit-card"></i> Payment Settings</li>
+        <li><i class="fa-solid fa-rectangle-list"></i> Dynamic Forms</li>
+        <li><i class="fa-solid fa-chart-column"></i> menu reports</li>
+        <li class="active"><i class="fa-solid fa-calendar-star"></i> Fundraising Event</li>
+        <li class="logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</li>
+      </ul>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" placeholder="Search in builder...">
+        </div>
+        <div class="topbar-spacer"></div>
+        <button class="btn">Save Draft</button>
+        <button class="btn primary">Publish Event</button>
+      </div>
+
+      <div class="content">
+        <h2 class="page-title">Edit Event · Gala Night 2026</h2>
+        <p class="page-sub">Drag the tickets below to change their display order on the website.</p>
+
+        <div class="tabs">
+          <div class="tab">Basic Info</div>
+          <div class="tab">Schedule</div>
+          <div class="tab active">Tickets</div>
+          <div class="tab">Media</div>
+          <div class="tab">Sponsors</div>
+        </div>
+
+        <div class="toolbar-row">
+          <div class="tl-left">
+            <strong style="font-size:14px;">Ticket Types</strong>
+            <span style="color:#6c757d; font-size:12.5px;">(drag to reorder)</span>
+          </div>
+          <div class="tl-right">
+            <button class="btn primary small"><i class="fa-solid fa-plus"></i> Add Ticket Type</button>
+          </div>
+        </div>
+
+        <div class="dnd-list">
+          <div class="dnd-item dragging">
+            <span class="dnd-handle"><i class="fa-solid fa-grip-vertical"></i></span>
+            <div class="dnd-info">
+              <strong>Regular</strong>
+              <small>Capacity: 100 · Sold: 25 · Max 4 per user</small>
+            </div>
+            <span class="dnd-price">CAD 50.00</span>
+            <button class="icon-btn"><i class="fa-solid fa-pen"></i></button>
+            <button class="icon-btn"><i class="fa-solid fa-trash"></i></button>
+          </div>
+
+          <div class="dnd-item">
+            <span class="dnd-handle"><i class="fa-solid fa-grip-vertical"></i></span>
+            <div class="dnd-info">
+              <strong>VIP</strong>
+              <small>Capacity: 50 · Sold: 18 · Max 2 per user</small>
+            </div>
+            <span class="dnd-price">CAD 100.00</span>
+            <button class="icon-btn"><i class="fa-solid fa-pen"></i></button>
+            <button class="icon-btn"><i class="fa-solid fa-trash"></i></button>
+          </div>
+
+          <div class="dnd-item">
+            <span class="dnd-handle"><i class="fa-solid fa-grip-vertical"></i></span>
+            <div class="dnd-info">
+              <strong>Student</strong>
+              <small>Capacity: 30 · Sold: 4 · Max 1 per user</small>
+            </div>
+            <span class="dnd-price">CAD 25.00</span>
+            <button class="icon-btn"><i class="fa-solid fa-pen"></i></button>
+            <button class="icon-btn"><i class="fa-solid fa-trash"></i></button>
+          </div>
+
+          <div class="dnd-item">
+            <span class="dnd-handle"><i class="fa-solid fa-grip-vertical"></i></span>
+            <div class="dnd-info">
+              <strong>Table of 8 (Bundle)</strong>
+              <small>Capacity: 12 bundles · Sold: 2 · Deducts 8 individual tickets per sale</small>
+            </div>
+            <span class="dnd-price">CAD 700.00</span>
+            <button class="icon-btn"><i class="fa-solid fa-pen"></i></button>
+            <button class="icon-btn"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        </div>
+
+        <div style="margin-top:24px; padding:14px 18px; background:#fff3cd; border-left:4px solid #f59e0b; border-radius:8px; font-size:13px; color:#856404;">
+          <b>⚠ Bundle Rule:</b> Bundle "Table of 8" requires 8 individual tickets to be available. If remaining &lt; 8, the bundle automatically appears as Sold Out on the website.
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+
+<!-- ==================================================================== -->
+<!-- SCREEN 6 — Promo Codes Management                                   -->
+<!-- ==================================================================== -->
+<div class="screen-wrap">
+  <div class="screen-label">
+    <span>Screen 6 · Promo &amp; Discount Codes — List + Create</span>
+    <span class="badge-num">NEW v2.0</span>
+  </div>
+
+  <div class="dashboard-shell">
+    <aside class="sidebar">
+      <ul>
+        <li><i class="fa-regular fa-user"></i> Profile</li>
+        <li><i class="fa-solid fa-users"></i> Users</li>
+        <li><i class="fa-solid fa-file-invoice"></i> My Billings</li>
+        <li><i class="fa-solid fa-layer-group"></i> Categories</li>
+        <li><i class="fa-solid fa-hand-holding-heart"></i> Programs</li>
+        <li><i class="fa-solid fa-newspaper"></i> Blog &amp; News</li>
+        <li><i class="fa-solid fa-file-lines"></i> Pages</li>
+        <li><i class="fa-solid fa-sliders"></i> Platform Customization</li>
+        <li><i class="fa-solid fa-key"></i> Permissions</li>
+        <li><i class="fa-solid fa-user-shield"></i> Admins</li>
+        <li><i class="fa-solid fa-credit-card"></i> Payment Settings</li>
+        <li><i class="fa-solid fa-rectangle-list"></i> Dynamic Forms</li>
+        <li><i class="fa-solid fa-chart-column"></i> menu reports</li>
+        <li class="active"><i class="fa-solid fa-calendar-star"></i> Fundraising Event</li>
+        <li class="sub"><i class="fa-solid fa-gauge"></i> Dashboard</li>
+        <li class="sub"><i class="fa-solid fa-ticket"></i> Tickets</li>
+        <li class="sub"><i class="fa-solid fa-hand-holding-dollar"></i> Donations</li>
+        <li class="sub active"><i class="fa-solid fa-tags"></i> Promo Codes</li>
+        <li class="logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</li>
+      </ul>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" placeholder="Search promo codes">
+        </div>
+        <div class="topbar-spacer"></div>
+        <button class="btn primary"><i class="fa-solid fa-plus"></i> Create Promo Code</button>
+      </div>
+
+      <div class="content">
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Type</th>
+                <th>Value</th>
+                <th>Usage</th>
+                <th>Expires</th>
+                <th>Status</th>
+                <th style="width:100px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code style="background:#eef2ff; padding:4px 10px; border-radius:5px; color:#2d3a6b; font-weight:700;">GALA20</code></td>
+                <td>Percentage</td>
+                <td><b>20% off</b></td>
+                <td>47 / 100</td>
+                <td>Dec 31, 2026</td>
+                <td><span class="badge published">Active</span></td>
+                <td>
+                  <button class="icon-btn"><i class="fa-solid fa-pen"></i></button>
+                  <button class="icon-btn"><i class="fa-solid fa-trash"></i></button>
+                </td>
+              </tr>
+              <tr>
+                <td><code style="background:#eef2ff; padding:4px 10px; border-radius:5px; color:#2d3a6b; font-weight:700;">WELCOME50</code></td>
+                <td>Fixed</td>
+                <td><b>CAD 50 off</b></td>
+                <td>8 / 50</td>
+                <td>Nov 15, 2026</td>
+                <td><span class="badge published">Active</span></td>
+                <td>
+                  <button class="icon-btn"><i class="fa-solid fa-pen"></i></button>
+                  <button class="icon-btn"><i class="fa-solid fa-trash"></i></button>
+                </td>
+              </tr>
+              <tr>
+                <td><code style="background:#eef2ff; padding:4px 10px; border-radius:5px; color:#2d3a6b; font-weight:700;">EARLYBIRD</code></td>
+                <td>Percentage</td>
+                <td><b>15% off</b></td>
+                <td>50 / 50</td>
+                <td>Aug 01, 2026</td>
+                <td><span class="badge draft">Used up</span></td>
+                <td>
+                  <button class="icon-btn"><i class="fa-solid fa-pen"></i></button>
+                  <button class="icon-btn"><i class="fa-solid fa-trash"></i></button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+
+<!-- ==================================================================== -->
+<!-- SCREEN 7 — Refund Dialog Modal                                      -->
+<!-- ==================================================================== -->
+<div class="screen-wrap">
+  <div class="screen-label">
+    <span>Screen 7 · Refund Dialog — Issue Stripe Refund from Admin</span>
+    <span class="badge-num">NEW v2.0</span>
+  </div>
+
+  <div class="dashboard-shell">
+    <aside class="sidebar">
+      <ul>
+        <li><i class="fa-regular fa-user"></i> Profile</li>
+        <li><i class="fa-solid fa-users"></i> Users</li>
+        <li><i class="fa-solid fa-file-invoice"></i> My Billings</li>
+        <li><i class="fa-solid fa-layer-group"></i> Categories</li>
+        <li><i class="fa-solid fa-hand-holding-heart"></i> Programs</li>
+        <li><i class="fa-solid fa-newspaper"></i> Blog &amp; News</li>
+        <li><i class="fa-solid fa-file-lines"></i> Pages</li>
+        <li><i class="fa-solid fa-sliders"></i> Platform Customization</li>
+        <li><i class="fa-solid fa-key"></i> Permissions</li>
+        <li><i class="fa-solid fa-user-shield"></i> Admins</li>
+        <li><i class="fa-solid fa-credit-card"></i> Payment Settings</li>
+        <li><i class="fa-solid fa-rectangle-list"></i> Dynamic Forms</li>
+        <li><i class="fa-solid fa-chart-column"></i> menu reports</li>
+        <li class="active"><i class="fa-solid fa-calendar-star"></i> Fundraising Event</li>
+        <li class="logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</li>
+      </ul>
+    </aside>
+
+    <main class="main">
+      <div class="modal-scene">
+        <div class="modal narrow">
+          <div class="modal-header">
+            <h2>Refund Ticket</h2>
+            <button class="close"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+
+          <div style="background:#f8f9fa; padding:14px 16px; border-radius:8px; margin-bottom:20px; font-size:13px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+              <span style="color:#6c757d;">Ticket Code</span>
+              <b>FT-01K3A9B2M8XQRT</b>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+              <span style="color:#6c757d;">Holder</span>
+              <b>Omar K.</b>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+              <span style="color:#6c757d;">Ticket Type</span>
+              <b>VIP</b>
+            </div>
+            <div style="display:flex; justify-content:space-between;">
+              <span style="color:#6c757d;">Paid</span>
+              <b>CAD 100.00</b>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom:14px;">
+            <label>Refund Reason</label>
+            <select>
+              <option>User requested refund</option>
+              <option>Duplicate purchase</option>
+              <option>Event cancelled</option>
+              <option>Other</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="margin-bottom:14px;">
+            <label>Refund Amount</label>
+            <input type="text" value="100.00">
+            <span class="helper">Full refund of CAD 100.00 via Stripe</span>
+          </div>
+
+          <div style="background:#fef3c7; padding:12px 14px; border-radius:8px; font-size:12.5px; color:#856404; border-left:4px solid #f59e0b;">
+            ⚠ This will: free 1 VIP seat · reduce sold count by 1 · adjust reports.
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn">Cancel</button>
+            <button class="btn danger"><i class="fa-solid fa-rotate-left"></i> Confirm Refund</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+
+<!-- ==================================================================== -->
+<!-- SCREEN 8 — QR Check-in Screen                                       -->
+<!-- ==================================================================== -->
+<div class="screen-wrap">
+  <div class="screen-label">
+    <span>Screen 8 · QR Check-in — Camera Scan + Live Result Feed</span>
+    <span class="badge-num">NEW v2.0</span>
+  </div>
+
+  <div class="dashboard-shell">
+    <aside class="sidebar">
+      <ul>
+        <li><i class="fa-regular fa-user"></i> Profile</li>
+        <li><i class="fa-solid fa-users"></i> Users</li>
+        <li><i class="fa-solid fa-file-invoice"></i> My Billings</li>
+        <li><i class="fa-solid fa-layer-group"></i> Categories</li>
+        <li><i class="fa-solid fa-hand-holding-heart"></i> Programs</li>
+        <li><i class="fa-solid fa-newspaper"></i> Blog &amp; News</li>
+        <li><i class="fa-solid fa-file-lines"></i> Pages</li>
+        <li><i class="fa-solid fa-sliders"></i> Platform Customization</li>
+        <li><i class="fa-solid fa-key"></i> Permissions</li>
+        <li><i class="fa-solid fa-user-shield"></i> Admins</li>
+        <li><i class="fa-solid fa-credit-card"></i> Payment Settings</li>
+        <li><i class="fa-solid fa-rectangle-list"></i> Dynamic Forms</li>
+        <li><i class="fa-solid fa-chart-column"></i> menu reports</li>
+        <li class="active"><i class="fa-solid fa-calendar-star"></i> Fundraising Event</li>
+        <li class="sub"><i class="fa-solid fa-gauge"></i> Dashboard</li>
+        <li class="sub active"><i class="fa-solid fa-ticket"></i> Tickets</li>
+        <li class="sub"><i class="fa-solid fa-hand-holding-dollar"></i> Donations</li>
+        <li class="sub"><i class="fa-solid fa-tags"></i> Promo Codes</li>
+        <li class="logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</li>
+      </ul>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" placeholder="Or enter ticket code manually: FT-...">
+        </div>
+        <div class="topbar-spacer"></div>
+        <button class="btn"><i class="fa-solid fa-keyboard"></i> Enter Code</button>
+        <button class="btn primary"><i class="fa-solid fa-qrcode"></i> Camera ON</button>
+      </div>
+
+      <div class="content" style="padding:20px;">
+        <div class="qr-scene">
+          <!-- Camera Scene -->
+          <div class="qr-scanner-box">
+            <div class="qr-frame">
+              <div class="scan-line"></div>
+            </div>
+            <div style="font-size:14px; opacity:.8;">Point the QR code at the camera</div>
+            <div style="font-size:12px; opacity:.5; margin-top:6px;">Scanning…</div>
+          </div>
+
+          <!-- Recent Scans -->
+          <div class="qr-recent">
+            <h3>Recent Scans</h3>
+
+            <div class="qr-result success">
+              <div class="qr-icon"><i class="fa-solid fa-check"></i></div>
+              <div class="qr-info">
+                <strong>A. Donor · VIP</strong>
+                <small>FT-01J2ZX8Q4R9WPT · Checked-in now</small>
+              </div>
+            </div>
+
+            <div class="qr-result warn">
+              <div class="qr-icon"><i class="fa-solid fa-exclamation"></i></div>
+              <div class="qr-info">
+                <strong>Already checked-in at 19:04</strong>
+                <small>FT-01K3A9B2M8XQRT · Omar K.</small>
+              </div>
+            </div>
+
+            <div class="qr-result danger">
+              <div class="qr-icon"><i class="fa-solid fa-xmark"></i></div>
+              <div class="qr-info">
+                <strong>Invalid ticket</strong>
+                <small>Unknown code or belongs to another event</small>
+              </div>
+            </div>
+
+            <div class="qr-result success">
+              <div class="qr-icon"><i class="fa-solid fa-check"></i></div>
+              <div class="qr-info">
+                <strong>Layla H. · Regular</strong>
+                <small>FT-01P5D8E4O7ZSVX · Checked-in at 19:03</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+
+<!-- ==================================================================== -->
+<!-- SCREEN 9 — Filter Modal (Enhanced)                                  -->
+<!-- ==================================================================== -->
+<div class="screen-wrap">
+  <div class="screen-label">
+    <span>Screen 9 · Enhanced Filter Modal — Category, Zakat, Source</span>
+    <span class="badge-num">v2.0 ENHANCED</span>
+  </div>
+
+  <div class="dashboard-shell">
+    <aside class="sidebar">
+      <ul>
+        <li><i class="fa-regular fa-user"></i> Profile</li>
+        <li><i class="fa-solid fa-users"></i> Users</li>
+        <li><i class="fa-solid fa-file-invoice"></i> My Billings</li>
+        <li><i class="fa-solid fa-layer-group"></i> Categories</li>
+        <li><i class="fa-solid fa-hand-holding-heart"></i> Programs</li>
+        <li><i class="fa-solid fa-newspaper"></i> Blog &amp; News</li>
+        <li><i class="fa-solid fa-file-lines"></i> Pages</li>
+        <li><i class="fa-solid fa-sliders"></i> Platform Customization</li>
+        <li><i class="fa-solid fa-key"></i> Permissions</li>
+        <li><i class="fa-solid fa-user-shield"></i> Admins</li>
+        <li><i class="fa-solid fa-credit-card"></i> Payment Settings</li>
+        <li><i class="fa-solid fa-rectangle-list"></i> Dynamic Forms</li>
+        <li><i class="fa-solid fa-chart-column"></i> menu reports</li>
+        <li class="active"><i class="fa-solid fa-calendar-star"></i> Fundraising Event</li>
+        <li class="logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</li>
+      </ul>
+    </aside>
+
+    <main class="main">
+      <div class="modal-scene">
+        <div class="modal">
+          <div class="modal-header">
+            <h2>Filter Events</h2>
+            <button class="close"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Language</label>
+              <select><option>Select Language</option></select>
+            </div>
+            <div class="form-group">
+              <label>Category</label>
+              <select><option>Select Category</option></select>
+            </div>
+
+            <div class="form-group">
+              <label>Status</label>
+              <select><option>Select Status</option></select>
+            </div>
+            <div class="form-group">
+              <label>Country</label>
+              <select><option>Select Country</option></select>
+            </div>
+
+            <div class="form-group">
+              <label>City</label>
+              <select disabled><option>Select City</option></select>
+            </div>
+            <div class="form-group">
+              <label>Zakat Eligibility</label>
+              <select>
+                <option>Any</option>
+                <option>Zakat-eligible only</option>
+                <option>Non-zakat only</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>From Date</label>
+              <input type="date">
+            </div>
+            <div class="form-group">
+              <label>To Date</label>
+              <input type="date">
+            </div>
+
+            <div class="form-group">
+              <label>Donation Source</label>
+              <select>
+                <option>Any</option>
+                <option>Online</option>
+                <option>Recurring</option>
+                <option>Offline</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Ticket Type</label>
+              <select>
+                <option>Any</option>
+                <option>Free</option>
+                <option>Paid</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn">Reset</button>
+            <button class="btn primary">Apply Filters</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+
+<!-- ==================================================================== -->
+<!-- SCREEN 10 — Create Promo Code Modal                                 -->
+<!-- ==================================================================== -->
+<div class="screen-wrap">
+  <div class="screen-label">
+    <span>Screen 10 · Create Promo Code — Percentage / Fixed + Limits</span>
+    <span class="badge-num">NEW v2.0</span>
+  </div>
+
+  <div class="dashboard-shell">
+    <aside class="sidebar">
+      <ul>
+        <li><i class="fa-regular fa-user"></i> Profile</li>
+        <li><i class="fa-solid fa-users"></i> Users</li>
+        <li><i class="fa-solid fa-file-invoice"></i> My Billings</li>
+        <li><i class="fa-solid fa-layer-group"></i> Categories</li>
+        <li><i class="fa-solid fa-hand-holding-heart"></i> Programs</li>
+        <li><i class="fa-solid fa-newspaper"></i> Blog &amp; News</li>
+        <li><i class="fa-solid fa-file-lines"></i> Pages</li>
+        <li><i class="fa-solid fa-sliders"></i> Platform Customization</li>
+        <li><i class="fa-solid fa-key"></i> Permissions</li>
+        <li><i class="fa-solid fa-user-shield"></i> Admins</li>
+        <li><i class="fa-solid fa-credit-card"></i> Payment Settings</li>
+        <li><i class="fa-solid fa-rectangle-list"></i> Dynamic Forms</li>
+        <li><i class="fa-solid fa-chart-column"></i> menu reports</li>
+        <li class="active"><i class="fa-solid fa-calendar-star"></i> Fundraising Event</li>
+        <li class="logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</li>
+      </ul>
+    </aside>
+
+    <main class="main">
+      <div class="modal-scene">
+        <div class="modal">
+          <div class="modal-header">
+            <h2>Create Promo Code</h2>
+            <button class="close"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Promo Code</label>
+              <input type="text" value="GALA20">
+            </div>
+            <div class="form-group">
+              <label>Discount Type</label>
+              <select>
+                <option>Percentage (%)</option>
+                <option>Fixed Amount (CAD)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Discount Value</label>
+              <input type="text" value="20">
+            </div>
+            <div class="form-group">
+              <label>Usage Limit</label>
+              <input type="text" value="100">
+            </div>
+
+            <div class="form-group">
+              <label>Expires At</label>
+              <input type="date" value="2026-12-31">
+            </div>
+            <div class="form-group">
+              <label>Status</label>
+              <select><option>Active</option><option>Inactive</option></select>
+            </div>
+
+            <div class="form-group full">
+              <label>Applicable Ticket Types</label>
+              <select multiple style="height:80px;">
+                <option selected>VIP</option>
+                <option selected>Regular</option>
+                <option>Student</option>
+                <option>Table of 8</option>
+              </select>
+              <span class="helper">Hold Ctrl / Cmd to select multiple</span>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn">Cancel</button>
+            <button class="btn primary">Create Promo Code</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+
+<!-- ==================================================================== -->
+<!-- SCREEN 11 — Add Offline Donation Modal                              -->
+<!-- ==================================================================== -->
+<div class="screen-wrap">
+  <div class="screen-label">
+    <span>Screen 11 · Record Offline Donation — Cash / Check / Manual</span>
+    <span class="badge-num">NEW v2.0</span>
+  </div>
+
+  <div class="dashboard-shell">
+    <aside class="sidebar">
+      <ul>
+        <li><i class="fa-regular fa-user"></i> Profile</li>
+        <li><i class="fa-solid fa-users"></i> Users</li>
+        <li><i class="fa-solid fa-file-invoice"></i> My Billings</li>
+        <li><i class="fa-solid fa-layer-group"></i> Categories</li>
+        <li><i class="fa-solid fa-hand-holding-heart"></i> Programs</li>
+        <li><i class="fa-solid fa-newspaper"></i> Blog &amp; News</li>
+        <li><i class="fa-solid fa-file-lines"></i> Pages</li>
+        <li><i class="fa-solid fa-sliders"></i> Platform Customization</li>
+        <li><i class="fa-solid fa-key"></i> Permissions</li>
+        <li><i class="fa-solid fa-user-shield"></i> Admins</li>
+        <li><i class="fa-solid fa-credit-card"></i> Payment Settings</li>
+        <li><i class="fa-solid fa-rectangle-list"></i> Dynamic Forms</li>
+        <li><i class="fa-solid fa-chart-column"></i> menu reports</li>
+        <li class="active"><i class="fa-solid fa-calendar-star"></i> Fundraising Event</li>
+        <li class="logout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</li>
+      </ul>
+    </aside>
+
+    <main class="main">
+      <div class="modal-scene">
+        <div class="modal narrow">
+          <div class="modal-header">
+            <h2>Record Offline Donation</h2>
+            <button class="close"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+
+          <div class="form-group" style="margin-bottom:14px;">
+            <label>Donor Name</label>
+            <input type="text" placeholder="e.g. Cash Donor">
+          </div>
+
+          <div class="form-group" style="margin-bottom:14px;">
+            <label>Donor Email <span style="color:#6c757d; font-weight:500;">(optional)</span></label>
+            <input type="text" placeholder="donor@example.com">
+          </div>
+
+          <div class="form-grid" style="margin-bottom:14px;">
+            <div class="form-group">
+              <label>Amount (CAD)</label>
+              <input type="text" value="100.00">
+            </div>
+            <div class="form-group">
+              <label>Received At</label>
+              <input type="date" value="2026-08-30">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom:14px;">
+            <label>Payment Method</label>
+            <select>
+              <option>Cash</option>
+              <option>Check</option>
+              <option>Bank Transfer</option>
+              <option>Other</option>
+            </select>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:10px; padding:12px 14px; background:#f8f9fa; border-radius:8px; margin-bottom:14px;">
+            <input type="checkbox" id="zakatCheck" style="width:18px; height:18px;">
+            <label for="zakatCheck" style="font-size:13px; color:#495057; cursor:pointer;">This is a <b>Zakat</b> donation</label>
+          </div>
+
+          <div style="background:#d4edda; padding:12px 14px; border-radius:8px; font-size:12.5px; color:#155724; border-left:4px solid #28a745;">
+            ✓ This will immediately update the event's raised amount.
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn">Cancel</button>
+            <button class="btn primary">Record Donation</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+</body>
+</html>
