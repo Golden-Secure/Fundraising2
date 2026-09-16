@@ -1,0 +1,1557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fundraising Events v2.0 — Developer Technical Specification</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: #fff;
+    color: #1a1f36;
+    line-height: 1.7;
+    padding: 50px 20px;
+  }
+  .doc { max-width: 950px; margin: 0 auto; }
+
+  /* Cover */
+  .cover {
+    padding: 50px 0;
+    border-bottom: 4px solid #2d3a6b;
+    margin-bottom: 40px;
+  }
+  .cover .kicker {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    color: #2d3a6b;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+  }
+  .cover h1 { font-size: 34px; color: #1a1f36; line-height: 1.25; margin-bottom: 12px; }
+  .cover .subtitle { font-size: 16px; color: #556; font-style: italic; margin-bottom: 24px; }
+  .cover .meta {
+    font-size: 13.5px;
+    color: #556;
+    line-height: 2;
+    border-left: 4px solid #2d3a6b;
+    padding-left: 18px;
+  }
+  .cover .meta strong { color: #1a1f36; }
+
+  /* TOC */
+  .toc {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 24px 30px;
+    margin-bottom: 50px;
+    font-size: 14px;
+  }
+  .toc h3 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #2d3a6b;
+    margin-bottom: 16px;
+  }
+  .toc ol { list-style: none; counter-reset: item; }
+  .toc li {
+    counter-increment: item;
+    padding: 5px 0;
+    color: #334155;
+  }
+  .toc li::before {
+    content: counter(item, decimal-leading-zero) "  ";
+    color: #2d3a6b;
+    font-weight: 700;
+    font-family: monospace;
+    margin-right: 8px;
+  }
+
+  /* Headings */
+  h1.chapter {
+    font-size: 24px;
+    color: #1a1f36;
+    margin: 60px 0 20px 0;
+    padding-bottom: 12px;
+    border-bottom: 3px solid #2d3a6b;
+    font-weight: 700;
+  }
+  h1.chapter .num {
+    color: #2d3a6b;
+    font-family: monospace;
+    margin-right: 10px;
+  }
+  h2.sub {
+    font-size: 17px;
+    color: #2d3a6b;
+    margin: 32px 0 12px 0;
+    font-weight: 700;
+  }
+  h3.subsub {
+    font-size: 14.5px;
+    color: #1a1f36;
+    margin: 22px 0 10px 0;
+    font-weight: 700;
+    font-family: monospace;
+  }
+
+  p { margin-bottom: 12px; font-size: 14.5px; }
+  ul, ol { margin: 10px 0 18px 26px; }
+  li { margin-bottom: 6px; font-size: 14px; }
+  strong { color: #0f172a; }
+  em { color: #475569; font-style: normal; background: #f1f5f9; padding: 1px 6px; border-radius: 3px; font-size: 13px; font-family: monospace; }
+
+  /* Code */
+  code {
+    font-family: "SF Mono", Consolas, Monaco, monospace;
+    font-size: 13px;
+    background: #f1f5f9;
+    color: #0f172a;
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+  pre {
+    font-family: "SF Mono", Consolas, Monaco, monospace;
+    font-size: 12.5px;
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 16px 20px;
+    margin: 14px 0;
+    border-radius: 8px;
+    overflow-x: auto;
+    line-height: 1.6;
+  }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0 22px 0;
+    font-size: 13px;
+    background: #fff;
+  }
+  th {
+    background: #2d3a6b;
+    color: #fff;
+    text-align: left;
+    padding: 10px 12px;
+    font-weight: 600;
+    font-size: 11.5px;
+    letter-spacing: .3px;
+    text-transform: uppercase;
+  }
+  td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #eef1f7;
+    vertical-align: top;
+  }
+  tr:nth-child(even) td { background: #fafbfd; }
+  table code { font-size: 12px; }
+
+  /* Callout boxes */
+  .note {
+    border-left: 4px solid;
+    padding: 14px 18px;
+    margin: 16px 0;
+    border-radius: 6px;
+    font-size: 13.5px;
+    line-height: 1.6;
+  }
+  .note.info { background: #eff6ff; border-color: #3b82f6; color: #1e3a8a; }
+  .note.warn { background: #fffbeb; border-color: #f59e0b; color: #78350f; }
+  .note.danger { background: #fef2f2; border-color: #ef4444; color: #7f1d1d; }
+  .note.success { background: #f0fdf4; border-color: #22c55e; color: #14532d; }
+  .note strong { display: block; margin-bottom: 4px; }
+
+  /* Tabs */
+  .endpoint {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin: 12px 0;
+    font-family: monospace;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .endpoint .method {
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    letter-spacing: .5px;
+    color: #fff;
+  }
+  .method.get { background: #16a34a; }
+  .method.post { background: #2563eb; }
+  .method.patch { background: #ea580c; }
+  .method.delete { background: #dc2626; }
+
+  footer {
+    text-align: center;
+    padding: 40px 0 20px;
+    color: #94a3b8;
+    font-size: 12.5px;
+    border-top: 1px solid #e5e9f2;
+    margin-top: 60px;
+  }
+
+  @media print {
+    body { padding: 0; }
+    h1.chapter { page-break-before: always; }
+    .cover { page-break-after: always; }
+    pre { background: #1a1f36 !important; -webkit-print-color-adjust: exact; }
+    th { background: #2d3a6b !important; -webkit-print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+<div class="doc">
+
+<!-- ================= COVER ================= -->
+<div class="cover">
+  <div class="kicker">Engineering Specification</div>
+  <h1>Fundraising Events Completion — v2.0</h1>
+  <div class="subtitle">Backend · Frontend · Mobile — Developer Technical Specification</div>
+  <div class="meta">
+    <strong>Version:</strong> 2.0<br>
+    <strong>Date:</strong> 31 August 2026<br>
+    <strong>Audience:</strong> Backend Engineers · Frontend Engineers · Mobile Engineers · QA<br>
+    <strong>Base Document:</strong> v1.1 (2026-08-11) — all v1.1 sections remain in force unless overridden<br>
+    <strong>Status:</strong> Ready for Implementation
+  </div>
+</div>
+
+<!-- ================= TOC ================= -->
+<div class="toc">
+  <h3>Table of Contents</h3>
+  <ol>
+    <li>Introduction &amp; Scope</li>
+    <li>Architecture Overview &amp; Module Boundaries</li>
+    <li>Core Enums, Contracts &amp; Integration Events</li>
+    <li>Database Schema (Migrations)</li>
+    <li>API Contract — Client Endpoints</li>
+    <li>API Contract — Admin Endpoints</li>
+    <li>Error Code Registry (v2.0)</li>
+    <li>Background Jobs &amp; Scheduled Tasks</li>
+    <li>Realtime Layer (Reverb + FCM)</li>
+    <li>Feature-by-Feature Implementation Guide</li>
+    <li>Backend Work Items (BE-14 → BE-28)</li>
+    <li>Frontend Work Items (FE-09 → FE-22)</li>
+    <li>Mobile Work Items (MO-10 → MO-23)</li>
+    <li>Testing Strategy (Pest / Jest / Flutter Test)</li>
+    <li>Deployment &amp; Rollout Plan</li>
+    <li>Risks &amp; Mitigations</li>
+    <li>Appendix A — Full Endpoint Index</li>
+    <li>Appendix B — Glossary</li>
+  </ol>
+</div>
+
+<!-- ============================================================ -->
+<!-- 1. INTRODUCTION -->
+<!-- ============================================================ -->
+<h1 class="chapter"><span class="num">01</span> Introduction &amp; Scope</h1>
+
+<h2 class="sub">1.1 Purpose</h2>
+<p>
+  This document specifies the engineering implementation of <strong>Fundraising Events Completion v2.0</strong>.
+  It is a pure technical specification — no design or wireframe content. All references to
+  feature names, error codes, and schema follow the patterns established in v1.1.
+</p>
+
+<h2 class="sub">1.2 In Scope (v2.0 additions)</h2>
+<ul>
+  <li>Recurring event donations (monthly / yearly / custom)</li>
+  <li>Per-user ticket limits (free &amp; paid)</li>
+  <li>Stripe refunds (tickets + donations)</li>
+  <li>Promo &amp; discount codes</li>
+  <li>Offline / manual donations &amp; manual ticket issuance</li>
+  <li>Donation records table (unified ledger view)</li>
+  <li>Event summary KPIs + donations dashboard</li>
+  <li>Bundle inventory deduction &amp; proportional availability constraint</li>
+  <li>Hold-race notifications + sold-out waitlist</li>
+  <li>Push reminders + custom FCM icon</li>
+  <li>Add-to-calendar (ICS generation)</li>
+  <li>Data export (CSV / XLSX)</li>
+  <li>QR scanner (admin web + mobile admin mode)</li>
+  <li>Pledged vs. Collected donations tracking</li>
+  <li>My Tickets redesign fields</li>
+  <li>Small fixes batch (Arabic title, tier name, date+time merge, etc.)</li>
+</ul>
+
+<h2 class="sub">1.3 Out of Scope (v2.0)</h2>
+<ul>
+  <li>Live Auction &amp; Bidding — <em>marked for v3.0 module</em></li>
+  <li>External dedicated QR scanner app — <em>deferred to v3.0</em></li>
+  <li>E-transfer donor flow</li>
+  <li>Alternate payment gateways</li>
+  <li>Web SCA redirect completion — <em>accepted v1 gap</em></li>
+</ul>
+
+<!-- ============================================================ -->
+<!-- 2. ARCHITECTURE -->
+<!-- ============================================================ -->
+<h1 class="chapter"><span class="num">02</span> Architecture Overview &amp; Module Boundaries</h1>
+
+<h2 class="sub">2.1 Layering Rules (deptrac-enforced)</h2>
+<table>
+  <tr><th>Layer</th><th>Owns</th><th>May Import</th><th>Must Not Import</th></tr>
+  <tr>
+    <td><code>Core</code></td>
+    <td>Enums, integration events, interfaces, exceptions</td>
+    <td>Nothing (foundation)</td>
+    <td>Any feature module</td>
+  </tr>
+  <tr>
+    <td><code>Billing</code></td>
+    <td>Checkout orchestration, Stripe vault, transactions</td>
+    <td>Core</td>
+    <td>FundraisingEvents, Users</td>
+  </tr>
+  <tr>
+    <td><code>Payment</code></td>
+    <td>Webhooks, mirror services, ledgers</td>
+    <td>Core</td>
+    <td>FundraisingEvents, Users</td>
+  </tr>
+  <tr>
+    <td><code>FundraisingEvents</code></td>
+    <td>Events, tickets, holds, donation listeners</td>
+    <td>Core</td>
+    <td>Users (tenant User model), Billing, Payment</td>
+  </tr>
+  <tr>
+    <td><code>Users</code></td>
+    <td>Implements Core contracts (token resolver, auth user resolver)</td>
+    <td>Core</td>
+    <td>—</td>
+  </tr>
+</table>
+
+<h2 class="sub">2.2 Cross-Module Communication</h2>
+<pre><code>FundraisingEvents ──────────┐
+                            │ (implements)
+                            ▼
+                    Core\Contracts\*
+                            ▲
+                            │ (dispatches)
+Billing / Payment ──────────┘
+
+Client ──▶ HTTP API ──▶ Billing ──▶ Stripe
+                          │
+                          ▼ afterCommit
+                  Core\IntegrationEvents\Fundraising\*
+                          │
+                          ▼ (queued)
+                  FundraisingEvents\Listeners\*</code></pre>
+
+<h2 class="sub">2.3 Idempotency Model</h2>
+<ul>
+  <li>Ticket issuance: unique composite <code>(source_reference, seq_no)</code> on <code>fundraising_tickets</code>.</li>
+  <li>Donation listener: <code>WithoutOverlapping('fundraising-event:{id}')</code> + row lock on the event.</li>
+  <li>Promo code usage: atomic <code>increment('used_count')</code> inside a DB transaction.</li>
+  <li>Refund: unique <code>stripe_refund_id</code> in <code>fundraising_refunds</code>.</li>
+</ul>
+
+<!-- ============================================================ -->
+<!-- 3. CORE CONTRACTS -->
+<!-- ============================================================ -->
+<h1 class="chapter"><span class="num">03</span> Core Enums, Contracts &amp; Integration Events</h1>
+
+<h2 class="sub">3.1 Enums</h2>
+
+<h3 class="subsub">BillingItemType (Core\Enums)</h3>
+<pre><code>enum BillingItemType: string
+{
+    case EVENT_DONATION = 'event_donation';
+    case EVENT_TICKET   = 'event_ticket';
+    // v2.0 addition for recurring subscriptions:
+    case EVENT_DONATION_RECURRING = 'event_donation_recurring';
+}</code></pre>
+
+<h3 class="subsub">TicketStatus</h3>
+<pre><code>enum TicketStatus: string
+{
+    case ISSUED      = 'issued';
+    case CHECKED_IN  = 'checked_in';
+    case CANCELLED   = 'cancelled';
+    case REFUNDED    = 'refunded';   // v2.0
+}</code></pre>
+
+<h3 class="subsub">RecurringFrequency (new in v2.0)</h3>
+<pre><code>enum RecurringFrequency: string
+{
+    case MONTHLY      = 'monthly';
+    case YEARLY       = 'yearly';
+    case CUSTOM_DAYS  = 'custom_days';
+}</code></pre>
+
+<h3 class="subsub">PromoCodeDiscountType (new in v2.0)</h3>
+<pre><code>enum PromoCodeDiscountType: string
+{
+    case PERCENT = 'percent';
+    case FIXED   = 'fixed';
+}</code></pre>
+
+<h2 class="sub">3.2 Core Contracts (Interfaces)</h2>
+
+<h3 class="subsub">EventTicketReservationService</h3>
+<pre><code>namespace App\Modules\Core\Contracts;
+
+interface EventTicketReservationService
+{
+    /**
+     * @throws TicketCapacityExceededException
+     * @throws TicketUserLimitExceededException   // v2.0
+     */
+    public function reserve(
+        int $ticketTypeId,
+        int $quantity,
+        string $reservationRef,
+        int $ttlMinutes = 30,
+        ?string $userId = null            // v2.0 — required for user-limit check
+    ): void;
+
+    public function release(string $reservationRef): void;
+
+    public function commit(string $reservationRef): void;
+}</code></pre>
+
+<h3 class="subsub">UserFirebaseTokensResolver</h3>
+<pre><code>interface UserFirebaseTokensResolver
+{
+    /** @return array<array{token: string, os: string}> */
+    public function tokensForUser(string $userId): array;
+}</code></pre>
+
+<h3 class="subsub">EventDonationLookup</h3>
+<pre><code>interface EventDonationLookup
+{
+    public function hasSucceededDonations(int $eventId): bool;
+}</code></pre>
+
+<h3 class="subsub">PromoCodeValidator (new in v2.0)</h3>
+<pre><code>interface PromoCodeValidator
+{
+    /**
+     * @throws PromoCodeInvalidException
+     * @throws PromoCodeExpiredException
+     * @throws PromoCodeUsageLimitReachedException
+     */
+    public function validate(string $code, array $ticketTypeIds): PromoCode;
+
+    /**
+     * Returns the effective discount amount (float, in major units).
+     */
+    public function applyDiscount(PromoCode $code, float $subtotal): float;
+
+    /**
+     * Atomically increments used_count. Must be called inside a DB transaction.
+     */
+    public function consume(PromoCode $code): void;
+}</code></pre>
+
+<h2 class="sub">3.3 Integration Events (Core\IntegrationEvents\Fundraising)</h2>
+
+<h3 class="subsub">EventDonationCompleted</h3>
+<pre><code>class EventDonationCompleted
+{
+    public function __construct(
+        public string  $tenantId,
+        public int     $eventId,
+        public float   $amount,
+        public string  $currencyCode,
+        public string  $reference,        // payments.reference | billing_transactions.id
+        public string  $source,           // 'cart_checkout' | 'stripe_native' | 'recurring' | 'offline'
+        public ?string $userId = null,
+        public bool    $isZakat = false,
+        public ?int    $recurringScheduleId = null,   // v2.0
+    ) {}
+}</code></pre>
+
+<h3 class="subsub">EventTicketsSold</h3>
+<pre><code>class EventTicketsSold
+{
+    public function __construct(
+        public string $tenantId,
+        public int    $eventId,
+        public int    $ticketTypeId,
+        public int    $quantity,
+        public float  $totalAmount,
+        public string $currencyCode,
+        public string $reference,          // checkout_order_item.id (idempotency key)
+        public string $reservationRef,     // "pf_{paymentFlowId}"
+        public int    $paymentFlowId,
+        public string $userId,
+    ) {}
+}</code></pre>
+
+<h3 class="subsub">EventDonationRefunded (v2.0)</h3>
+<pre><code>class EventDonationRefunded
+{
+    public function __construct(
+        public string $tenantId,
+        public int    $eventId,
+        public float  $amount,
+        public string $currencyCode,
+        public string $stripeRefundId,
+        public string $originalReference,
+        public ?string $reason = null,
+    ) {}
+}</code></pre>
+
+<h3 class="subsub">EventTicketsRefunded (v2.0)</h3>
+<pre><code>class EventTicketsRefunded
+{
+    public function __construct(
+        public string $tenantId,
+        public int    $eventId,
+        public int    $ticketTypeId,
+        public int    $quantity,
+        public float  $amount,
+        public string $currencyCode,
+        public string $stripeRefundId,
+        public array  $ticketCodes,       // ['FT-...', 'FT-...']
+    ) {}
+}</code></pre>
+
+<h3 class="subsub">RecurringDonationCreated (v2.0)</h3>
+<pre><code>class RecurringDonationCreated
+{
+    public function __construct(
+        public string $tenantId,
+        public int    $eventId,
+        public int    $scheduleId,
+        public string $userId,
+        public float  $amount,
+        public string $currencyCode,
+        public string $frequency,          // 'monthly' | 'yearly' | 'custom_days'
+        public bool   $isZakat,
+        public string $stripeSubscriptionId,
+        public string $nextChargeDate,     // ISO-8601
+    ) {}
+}</code></pre>
+
+<!-- ============================================================ -->
+<!-- 4. DATABASE SCHEMA -->
+<!-- ============================================================ -->
+<h1 class="chapter"><span class="num">04</span> Database Schema (Migrations)</h1>
+
+<div class="note info">
+  <strong>Path</strong>
+  All tenant migrations live under <code>database/migrations/tenant/</code>. Deploy atomically
+  with Core enum additions. Horizon restart is mandatory after deploy (old workers throw
+  <code>ValueError</code> on <code>BillingItemType::from</code>).
+</div>
+
+<h2 class="sub">4.1 New Tables (v2.0)</h2>
+
+<h3 class="subsub">recurring_donation_schedules</h3>
+<table>
+  <tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+  <tr><td><code>id</code></td><td>bigIncrements</td><td>PK</td></tr>
+  <tr><td><code>user_id</code></td><td>uuid</td><td>Indexed</td></tr>
+  <tr><td><code>event_id</code></td><td>unsignedBigInteger</td><td>FK → fundraising_events</td></tr>
+  <tr><td><code>amount</code></td><td>decimal(15,2)</td><td>Major units</td></tr>
+  <tr><td><code>currency_code</code></td><td>string(3)</td><td>ISO 4217</td></tr>
+  <tr><td><code>is_zakat</code></td><td>boolean</td><td>Default false</td></tr>
+  <tr><td><code>frequency</code></td><td>enum</td><td>monthly | yearly | custom_days</td></tr>
+  <tr><td><code>custom_interval_days</code></td><td>integer nullable</td><td>Required if frequency=custom_days</td></tr>
+  <tr><td><code>next_charge_date</code></td><td>timestampTz</td><td>Indexed for scheduling</td></tr>
+  <tr><td><code>status</code></td><td>enum</td><td>active | paused | cancelled</td></tr>
+  <tr><td><code>stripe_subscription_id</code></td><td>string nullable</td><td>Unique</td></tr>
+  <tr><td><code>stripe_payment_method_id</code></td><td>string nullable</td><td>For off-session charges</td></tr>
+  <tr><td><code>failure_count</code></td><td>integer default 0</td><td>Auto-cancel after 3 failures</td></tr>
+  <tr><td><code>timestamps</code></td><td>—</td><td>—</td></tr>
+</table>
+
+<h3 class="subsub">promo_codes</h3>
+<table>
+  <tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+  <tr><td><code>id</code></td><td>bigIncrements</td><td>PK</td></tr>
+  <tr><td><code>event_id</code></td><td>unsignedBigInteger</td><td>FK → fundraising_events (nullable for global codes)</td></tr>
+  <tr><td><code>code</code></td><td>string(32)</td><td>Unique, uppercase</td></tr>
+  <tr><td><code>discount_type</code></td><td>enum</td><td>percent | fixed</td></tr>
+  <tr><td><code>discount_value</code></td><td>decimal(15,2)</td><td>Interpretation depends on type</td></tr>
+  <tr><td><code>usage_limit</code></td><td>integer nullable</td><td>Null = unlimited</td></tr>
+  <tr><td><code>used_count</code></td><td>integer default 0</td><td>Atomic increment on consume</td></tr>
+  <tr><td><code>expires_at</code></td><td>timestampTz nullable</td><td>Null = no expiry</td></tr>
+  <tr><td><code>is_active</code></td><td>boolean default true</td><td>—</td></tr>
+  <tr><td><code>timestamps</code></td><td>—</td><td>—</td></tr>
+</table>
+
+<h3 class="subsub">promo_code_ticket_type (pivot)</h3>
+<table>
+  <tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+  <tr><td><code>promo_code_id</code></td><td>unsignedBigInteger</td><td>FK → promo_codes</td></tr>
+  <tr><td><code>ticket_type_id</code></td><td>unsignedBigInteger</td><td>FK → fundraising_ticket_types</td></tr>
+  <tr><td>—</td><td>unique composite</td><td>(promo_code_id, ticket_type_id)</td></tr>
+</table>
+
+<h3 class="subsub">offline_donations</h3>
+<table>
+  <tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+  <tr><td><code>id</code></td><td>bigIncrements</td><td>PK</td></tr>
+  <tr><td><code>event_id</code></td><td>unsignedBigInteger</td><td>FK → fundraising_events</td></tr>
+  <tr><td><code>donor_name</code></td><td>string(255)</td><td>—</td></tr>
+  <tr><td><code>donor_email</code></td><td>string(255) nullable</td><td>—</td></tr>
+  <tr><td><code>amount</code></td><td>decimal(15,2)</td><td>Major units</td></tr>
+  <tr><td><code>currency_code</code></td><td>string(3)</td><td>—</td></tr>
+  <tr><td><code>is_zakat</code></td><td>boolean default false</td><td>—</td></tr>
+  <tr><td><code>payment_method</code></td><td>enum</td><td>cash | check | bank_transfer | other</td></tr>
+  <tr><td><code>received_at</code></td><td>timestampTz</td><td>—</td></tr>
+  <tr><td><code>recorded_by_admin_id</code></td><td>uuid</td><td>Indexed</td></tr>
+  <tr><td><code>timestamps</code></td><td>—</td><td>—</td></tr>
+</table>
+
+<h3 class="subsub">fundraising_refunds</h3>
+<table>
+  <tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+  <tr><td><code>id</code></td><td>bigIncrements</td><td>PK</td></tr>
+  <tr><td><code>refund_type</code></td><td>enum</td><td>donation | ticket</td></tr>
+  <tr><td><code>transaction_id</code></td><td>string</td><td>Original txn id</td></tr>
+  <tr><td><code>amount</code></td><td>decimal(15,2)</td><td>—</td></tr>
+  <tr><td><code>currency_code</code></td><td>string(3)</td><td>—</td></tr>
+  <tr><td><code>reason</code></td><td>string(255) nullable</td><td>—</td></tr>
+  <tr><td><code>stripe_refund_id</code></td><td>string unique</td><td>—</td></tr>
+  <tr><td><code>status</code></td><td>enum</td><td>pending | completed | failed</td></tr>
+  <tr><td><code>refunded_at</code></td><td>timestampTz nullable</td><td>—</td></tr>
+  <tr><td><code>refunded_by_admin_id</code></td><td>uuid nullable</td><td>—</td></tr>
+  <tr><td><code>timestamps</code></td><td>—</td><td>—</td></tr>
+</table>
+
+<h3 class="subsub">ticket_availability_opt_ins (v2.0 — waitlist)</h3>
+<table>
+  <tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+  <tr><td><code>id</code></td><td>bigIncrements</td><td>PK</td></tr>
+  <tr><td><code>user_id</code></td><td>uuid</td><td>Indexed</td></tr>
+  <tr><td><code>event_id</code></td><td>unsignedBigInteger</td><td>FK</td></tr>
+  <tr><td><code>ticket_type_id</code></td><td>unsignedBigInteger</td><td>FK</td></tr>
+  <tr><td><code>notified_at</code></td><td>timestampTz nullable</td><td>Null = pending</td></tr>
+  <tr><td>—</td><td>unique composite</td><td>(user_id, ticket_type_id)</td></tr>
+</table>
+
+<h3 class="subsub">donation_pledges (Pledged vs Collected)</h3>
+<table>
+  <tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+  <tr><td><code>id</code></td><td>bigIncrements</td><td>PK</td></tr>
+  <tr><td><code>event_id</code></td><td>unsignedBigInteger</td><td>FK</td></tr>
+  <tr><td><code>donor_user_id</code></td><td>uuid nullable</td><td>—</td></tr>
+  <tr><td><code>donor_name</code></td><td>string nullable</td><td>For offline pledges</td></tr>
+  <tr><td><code>pledged_amount</code></td><td>decimal(15,2)</td><td>—</td></tr>
+  <tr><td><code>collected_amount</code></td><td>decimal(15,2) default 0</td><td>Incremented as payments arrive</td></tr>
+  <tr><td><code>pledge_date</code></td><td>date</td><td>—</td></tr>
+  <tr><td><code>expected_collection_date</code></td><td>date nullable</td><td>—</td></tr>
+  <tr><td><code>status</code></td><td>enum</td><td>pending | partially_collected | collected | defaulted</td></tr>
+  <tr><td><code>notes</code></td><td>text nullable</td><td>—</td></tr>
+  <tr><td><code>timestamps</code></td><td>—</td><td>—</td></tr>
+</table>
+
+<h2 class="sub">4.2 Column Additions to Existing Tables</h2>
+
+<h3 class="subsub">fundraising_ticket_types</h3>
+<pre><code>Schema::table('fundraising_ticket_types', function (Blueprint $table) {
+    $table->unsignedInteger('max_tickets_per_user')->nullable()->after('capacity');
+    $table->unsignedInteger('max_free_tickets_per_user')->nullable()->after('max_tickets_per_user');
+    $table->unsignedInteger('display_order')->default(0)->after('capacity');
+    $table->boolean('is_bundle')->default(false)->after('display_order');
+    $table->unsignedInteger('bundle_size')->nullable()->after('is_bundle');
+    $table->unsignedBigInteger('bundle_parent_ticket_type_id')->nullable()->after('bundle_size');
+});</code></pre>
+
+<h3 class="subsub">fundraising_tickets</h3>
+<pre><code>Schema::table('fundraising_tickets', function (Blueprint $table) {
+    $table->string('promo_code_used')->nullable()->after('currency_code');
+    $table->decimal('discount_applied', 15, 2)->default(0)->after('promo_code_used');
+    $table->string('refund_reason')->nullable()->after('checked_in_by');
+    $table->timestampTz('refunded_at')->nullable()->after('refund_reason');
+});</code></pre>
+
+<h3 class="subsub">fundraising_ticket_holds</h3>
+<pre><code>Schema::table('fundraising_ticket_holds', function (Blueprint $table) {
+    $table->uuid('user_id')->nullable()->after('quantity')->index();
+});</code></pre>
+
+<!-- ============================================================ -->
+<!-- 5. CLIENT ENDPOINTS -->
+<!-- ============================================================ -->
+<h1 class="chapter"><span class="num">05</span> API Contract — Client Endpoints</h1>
+
+<div class="note info">
+  <strong>Envelope Convention (unchanged from v1.1)</strong>
+  Success: <code>{ "success": true, "message": "...", "data": ... }</code><br>
+  Failure: <code>{ "success": false, "messages": [...], "data": { "code": "..." } }</code><br>
+  Clients <strong>must</strong> branch on <code>body.data.code</code>. Every registry error must explicitly pass <code>data: { code }</code>.
+</div>
+
+<h2 class="sub">5.1 Checkout (Billing Module — shared with programs)</h2>
+
+<div class="endpoint">
+  <span class="method post">POST</span>
+  <code>/api/v1/billing/client/checkout/create/flow</code>
+</div>
+
+<p><strong>Auth:</strong> <code>auth:sanctum</code> + <code>user-verified</code>. Guests are rejected (login is forced before any event purchase).</p>
+
+<h3 class="subsub">Request body — Event Donation (one-time)</h3>
+<pre><code>{
+  "checkout_type": "direct",
+  "item_id": 12,
+  "item_type": "event_donation",
+  "selection": {
+    "amount": 50.00,
+    "is_zakat": true
+  }
+}</code></pre>
+
+<h3 class="subsub">Request body — Event Donation (recurring)</h3>
+<pre><code>{
+  "checkout_type": "direct",
+  "item_id": 12,
+  "item_type": "event_donation",
+  "selection": {
+    "amount": 50.00,
+    "is_zakat": true,
+    "recurring": true,
+    "frequency": "monthly",
+    "custom_interval_days": null,
+    "start_date": "2026-09-01"
+  }
+}</code></pre>
+
+<h3 class="subsub">Request body — Event Ticket</h3>
+<pre><code>{
+  "checkout_type": "direct",
+  "item_id": 12,
+  "item_type": "event_ticket",
+  "selection": {
+    "ticket_type_id": 7,
+    "quantity": 2,
+    "promo_code": "GALA20"
+  }
+}</code></pre>
+
+<p><strong>Response (200):</strong></p>
+<pre><code>{
+  "success": true,
+  "message": "Checkout flow created",
+  "data": {
+    "payment_flow_id": 812
+  }
+}</code></pre>
+
+<h3 class="subsub">Validation rules</h3>
+<table>
+  <tr><th>Rule</th><th>Error code</th></tr>
+  <tr><td>Event must be <code>Published</code></td><td><code>EVENT_BOOKING_WINDOW_CLOSED</code></td></tr>
+  <tr><td>Donation <code>amount &gt;= 1.00</code></td><td><code>EVENT_DONATION_AMOUNT_INVALID</code></td></tr>
+  <tr><td>Ticket remaining &gt;= quantity (soft check)</td><td><code>EVENT_TICKET_CAPACITY_EXCEEDED</code></td></tr>
+  <tr><td>Promo code exists and active</td><td><code>PROMO_CODE_INVALID</code></td></tr>
+  <tr><td>Promo code not expired</td><td><code>PROMO_CODE_EXPIRED</code></td></tr>
+  <tr><td>Promo code usage limit</td><td><code>PROMO_CODE_USAGE_LIMIT_REACHED</code></td></tr>
+  <tr><td>Recurring must have valid frequency</td><td>Laravel validation 422 (errors map)</td></tr>
+</table>
+
+<h2 class="sub">5.2 Payment Start (takes the hold)</h2>
+
+<div class="endpoint">
+  <span class="method post">POST</span>
+  <code>/api/v1/billing/client/checkout/payment/start</code>
+</div>
+
+<p>Before creating the PaymentIntent, the service calls:</p>
+<pre><code>$reservationService->reserve(
+    ticketTypeId:  $ticketTypeId,
+    quantity:      $quantity,
+    reservationRef: "pf_{$flowId}",
+    ttlMinutes:    30,
+    userId:        $currentUserId
+);</code></pre>
+
+<p>This triggers: (a) per-user limit check, (b) capacity check with row-lock, (c) hold insert.</p>
+
+<h3 class="subsub">Errors</h3>
+<table>
+  <tr><th>Code</th><th>HTTP</th><th>Data</th></tr>
+  <tr><td><code>EVENT_TICKET_CAPACITY_EXCEEDED</code></td><td>422</td><td><code>{ ticket_type_id, remaining }</code></td></tr>
+  <tr><td><code>EVENT_TICKET_USER_LIMIT_EXCEEDED</code></td><td>422</td><td><code>{ ticket_type_id, limit, already_purchased }</code></td></tr>
+  <tr><td><code>RESERVATION_EXPIRED</code></td><td>422</td><td><code>{ ticket_type_id }</code></td></tr>
+</table>
+
+<h2 class="sub">5.3 Progress &amp; My Tickets</h2>
+
+<div class="endpoint">
+  <span class="method get">GET</span>
+  <code>/api/v1/fundraising/client/events/{id}/progress</code>
+</div>
+<p>Public · throttle:120,1 · Includes <code>tenant_id</code> (used to build the Reverb channel and FCM topic).</p>
+
+<div class="endpoint">
+  <span class="method get">GET</span>
+  <code>/api/v1/fundraising/client/tickets?payment_flow_id={id}</code>
+</div>
+<p>Auth · Returns per-attendee tickets. One row per attendee (quantity 2 → 2 rows).</p>
+
+<p><strong>v2.0 additions to response:</strong></p>
+<ul>
+  <li><code>event.start_at_utc</code>, <code>event.end_at_utc</code></li>
+  <li><code>event.location</code>, <code>event.venue_name</code></li>
+  <li><code>add_to_calendar_url</code> (ICS download link)</li>
+  <li><code>can_refund</code> (bool, within refund window)</li>
+</ul>
+
+<!-- ============================================================ -->
+<!-- 6. ADMIN ENDPOINTS -->
+<!-- ============================================================ -->
+<h1 class="chapter"><span class="num">06</span> API Contract — Admin Endpoints</h1>
+
+<div class="note warn">
+  <strong>Group</strong>
+  All admin endpoints sit behind <code>auth:sanctum, user-verified, plan.fundraising-events</code>.
+</div>
+
+<h2 class="sub">6.1 Donations</h2>
+
+<div class="endpoint">
+  <span class="method get">GET</span>
+  <code>/api/v1/fundraising/admin/events/{event}/donations</code>
+</div>
+<p>Query: <code>status?</code>, <code>source?</code> (online|recurring|offline), <code>is_zakat?</code>, <code>search?</code>, <code>sort?</code>, <code>page</code>, <code>per_page</code>.</p>
+
+<p><strong>Response row:</strong></p>
+<pre><code>{
+  "id": 1,
+  "donor_name": "Sara A.",
+  "donor_email": "sara@x.com",
+  "donor_user_id": "uuid",
+  "amount": "50.00",
+  "currency_code": "CAD",
+  "is_zakat": true,
+  "source": "online",
+  "status": "completed",
+  "transaction_id": "txn_123",
+  "created_at": "2026-08-10T14:03:22+00:00"
+}</code></pre>
+
+<div class="endpoint">
+  <span class="method post">POST</span>
+  <code>/api/v1/fundraising/admin/events/{event}/donations/offline</code>
+</div>
+<pre><code>{
+  "donor_name": "Cash Donor",
+  "donor_email": "cash@example.com",     // optional
+  "amount": 100.00,
+  "is_zakat": false,
+  "payment_method": "cash",              // cash | check | bank_transfer | other
+  "received_at": "2026-08-30T10:00:00Z"
+}</code></pre>
+<p>Side effects: increments <code>raised_amount</code> immediately, creates an <code>EventDonationRecord</code> row with <code>source=offline</code>, dispatches no Stripe event.</p>
+
+<div class="endpoint">
+  <span class="method get">GET</span>
+  <code>/api/v1/fundraising/admin/events/{event}/donations/dashboard</code>
+</div>
+<p>Returns aggregated stats: total, zakat/non-zakat split, timeline, top donors, recurring count.</p>
+
+<div class="endpoint">
+  <span class="method get">GET</span>
+  <code>/api/v1/fundraising/admin/events/{event}/donations/export?format=csv|xlsx</code>
+</div>
+<p>Streaming response. Column list documented in §10.11.</p>
+
+<h2 class="sub">6.2 Refunds</h2>
+
+<div class="endpoint">
+  <span class="method post">POST</span>
+  <code>/api/v1/fundraising/admin/events/{event}/tickets/{ticket}/refund</code>
+</div>
+<pre><code>{
+  "reason": "User requested refund",
+  "amount": "100.00",          // optional; defaults to full
+  "send_notification": true
+}</code></pre>
+
+<p><strong>Backend flow:</strong></p>
+<ol>
+  <li>Validate ticket not already refunded → else <code>EVENT_REFUND_ALREADY_PROCESSED</code>.</li>
+  <li>Call Stripe Refund API against original PaymentIntent.</li>
+  <li>Persist row in <code>fundraising_refunds</code> with status <code>pending</code>.</li>
+  <li>On webhook <code>charge.refunded</code>: set status <code>completed</code>, dispatch <code>EventTicketsRefunded</code>.</li>
+  <li>Listener: decrement <code>tickets_sold_count</code>, free capacity, set ticket status <code>refunded</code>, broadcast progress.</li>
+</ol>
+
+<div class="endpoint">
+  <span class="method post">POST</span>
+  <code>/api/v1/fundraising/admin/events/{event}/donations/{donation}/refund</code>
+</div>
+<p>Only for <code>source=online</code>. Offline donations cannot be refunded via Stripe.</p>
+
+<h2 class="sub">6.3 Promo Codes</h2>
+
+<div class="endpoint">
+  <span class="method post">POST</span>
+  <code>/api/v1/fundraising/admin/events/{event}/promo-codes</code>
+</div>
+<pre><code>{
+  "code": "GALA20",
+  "discount_type": "percent",     // percent | fixed
+  "discount_value": 20,
+  "usage_limit": 100,
+  "expires_at": "2026-12-31T23:59:59Z",
+  "applicable_ticket_type_ids": [7, 8],
+  "is_active": true
+}</code></pre>
+
+<div class="endpoint">
+  <span class="method get">GET</span>
+  <code>/api/v1/fundraising/admin/events/{event}/promo-codes</code>
+</div>
+<div class="endpoint">
+  <span class="method patch">PATCH</span>
+  <code>/api/v1/fundraising/admin/events/{event}/promo-codes/{promoCode}</code>
+</div>
+<div class="endpoint">
+  <span class="method delete">DELETE</span>
+  <code>/api/v1/fundraising/admin/events/{event}/promo-codes/{promoCode}</code>
+</div>
+
+<h2 class="sub">6.4 Ticket Type Reorder</h2>
+
+<div class="endpoint">
+  <span class="method patch">PATCH</span>
+  <code>/api/v1/fundraising/admin/events/{event}/ticket-types/reorder</code>
+</div>
+<pre><code>{ "ticket_type_ids": [7, 5, 8] }</code></pre>
+<p>Updates <code>display_order</code> to match array indexes atomically inside a transaction.</p>
+
+<h2 class="sub">6.5 Manual Ticket Issuance</h2>
+
+<div class="endpoint">
+  <span class="method post">POST</span>
+  <code>/api/v1/fundraising/admin/events/{event}/tickets/manual</code>
+</div>
+<pre><code>{
+  "holder_name": "Walk-in Guest",
+  "holder_email": "guest@example.com",   // optional
+  "ticket_type_id": 7,
+  "amount_paid": 100.00,
+  "payment_method": "cash",
+  "quantity": 1
+}</code></pre>
+<p>Creates ticket(s) with <code>source_reference=manual_{adminId}_{timestamp}</code>. No Stripe interaction. Appears in reconciliation as <code>source=offline</code>.</p>
+
+<h2 class="sub">6.6 Data Export</h2>
+
+<div class="endpoint">
+  <span class="method get">GET</span>
+  <code>/api/v1/fundraising/admin/events/{event}/tickets/export?format=csv|xlsx</code>
+</div>
+<div class="endpoint">
+  <span class="method get">GET</span>
+  <code>/api/v1/fundraising/admin/events/{event}/donations/export?format=csv|xlsx</code>
+</div>
+
+<p>Implementation uses Laravel Excel or a chunked streaming writer to avoid memory pressure. Headers:</p>
+<pre><code>Content-Type: text/csv; charset=UTF-8
+Content-Disposition: attachment; filename="event-{id}-tickets-{date}.csv"
+X-Accel-Buffering: no</code></pre>
+
+<!-- ============================================================ -->
+<!-- 7. ERROR CODES -->
+<!-- ============================================================ -->
+<h1 class="chapter"><span class="num">07</span> Error Code Registry (v2.0)</h1>
+
+<table>
+  <tr><th>Code</th><th>HTTP</th><th>Where</th><th>Extra data</th></tr>
+  <tr><td><code>EVENT_TICKET_CAPACITY_EXCEEDED</code></td><td>422</td><td>create/flow, payment/start</td><td>ticket_type_id, remaining</td></tr>
+  <tr><td><code>EVENT_TICKET_USER_LIMIT_EXCEEDED</code></td><td>422</td><td>create/flow, payment/start</td><td>ticket_type_id, limit, already_purchased</td></tr>
+  <tr><td><code>EVENT_BOOKING_WINDOW_CLOSED</code></td><td>422</td><td>create/flow</td><td>—</td></tr>
+  <tr><td><code>EVENT_DONATION_AMOUNT_INVALID</code></td><td>422</td><td>create/flow (min 1.00)</td><td>—</td></tr>
+  <tr><td><code>PROMO_CODE_INVALID</code></td><td>422</td><td>create/flow</td><td>code, reason</td></tr>
+  <tr><td><code>PROMO_CODE_EXPIRED</code></td><td>422</td><td>create/flow</td><td>code, expires_at</td></tr>
+  <tr><td><code>PROMO_CODE_USAGE_LIMIT_REACHED</code></td><td>422</td><td>create/flow</td><td>code, used_count, limit</td></tr>
+  <tr><td><code>RESERVATION_EXPIRED</code></td><td>422</td><td>payment/start</td><td>ticket_type_id</td></tr>
+  <tr><td><code>RESERVATION_EXPIRED_BUT_PAYMENT_SUCCEEDED</code></td><td>422</td><td>webhook</td><td>payment_flow_id, ticket_type_id</td></tr>
+  <tr><td><code>EVENT_REFUND_ALREADY_PROCESSED</code></td><td>422</td><td>admin refund</td><td>refund_id, status</td></tr>
+  <tr><td><code>EVENT_REFUND_FAILED</code></td><td>422</td><td>admin refund</td><td>stripe_error</td></tr>
+  <tr><td><code>TICKET_ALREADY_CHECKED_IN</code></td><td>422</td><td>admin check-in</td><td>checked_in_at, checked_in_by</td></tr>
+  <tr><td><code>TICKET_CANCELLED</code></td><td>422</td><td>admin check-in</td><td>—</td></tr>
+  <tr><td><code>CART_CURRENCY_MISMATCH</code></td><td>409 (existing)</td><td>cart add (programs only)</td><td>cart_currency_code, item_currency_code</td></tr>
+</table>
+
+<div class="note danger">
+  <strong>Do not invent</strong>
+  There is no <code>EVENT_TICKET_SOLD_OUT</code> code — sold-out is <code>EVENT_TICKET_CAPACITY_EXCEEDED</code> with <code>remaining: 0</code>.
+  A check-in code for another event returns plain <code>404</code>.
+</div>
+
+<!-- ============================================================ -->
+<!-- 8. JOBS -->
+<!-- ============================================================ -->
+<h1 class="chapter"><span class="num">08</span> Background Jobs &amp; Scheduled Tasks</h1>
+
+<table>
+  <tr><th>Job</th><th>Schedule</th><th>Purpose</th></tr>
+  <tr>
+    <td><code>ProcessRecurringDonationsJob</code></td>
+    <td>Daily 02:00</td>
+    <td>Charge due schedules via Stripe. On success: dispatch <code>EventDonationCompleted(source=recurring)</code>. On failure: increment <code>failure_count</code>; auto-cancel after 3.</td>
+  </tr>
+  <tr>
+    <td><code>ScheduleEventRemindersJob</code></td>
+    <td>Hourly</td>
+    <td>Find events starting within the next 1h (configurable), send <code>event_reminder</code> FCM to all ticket holders.</td>
+  </tr>
+  <tr>
+    <td><code>ReconcileFundraisingEventAggregatesJob</code></td>
+    <td>Nightly 03:00 per tenant</td>
+    <td>Re-derive <code>raised_amount</code>, <code>tickets_sold_count</code>; delete expired holds; correct drift.</td>
+  </tr>
+  <tr>
+    <td><code>NotifyTicketAvailabilityJob</code></td>
+    <td>On-demand</td>
+    <td>Fired when a hold is released or refund frees a seat. Sends throttled <code>ticket_availability</code> FCM to opt-in users (FIFO).</td>
+  </tr>
+  <tr>
+    <td><code>SweepExpiredHoldsJob</code></td>
+    <td>Every 5 min</td>
+    <td>Delete holds where <code>expires_at &lt; now()</code>. Emits availability notifications.</td>
+  </tr>
+</table>
+
+<h2 class="sub">8.1 Job Skeleton — ProcessRecurringDonationsJob</h2>
+<pre><code>class ProcessRecurringDonationsJob implements ShouldQueue
+{
+    use Dispatchable, InteractsWithQueue, Queueable;
+
+    public function handle(StripeClient $stripe): void
+    {
+        RecurringDonationSchedule::query()
+            ->where('status', 'active')
+            ->where('next_charge_date', '&lt;=', now())
+            ->chunkById(50, function ($schedules) use ($stripe) {
+                foreach ($schedules as $schedule) {
+                    try {
+                        $charge = $stripe->paymentIntents->create([
+                            'amount'         => (int) ($schedule->amount * 100),
+                            'currency'       => strtolower($schedule->currency_code),
+                            'customer'       => $schedule->stripe_customer_id,
+                            'payment_method' => $schedule->stripe_payment_method_id,
+                            'confirm'        => true,
+                            'off_session'    => true,
+                        ]);
+
+                        EventDonationCompleted::dispatch(
+                            tenantId:          tenant('id'),
+                            eventId:           $schedule->event_id,
+                            amount:            $schedule->amount,
+                            currencyCode:      $schedule->currency_code,
+                            reference:         $charge->id,
+                            source:            'recurring',
+                            userId:            $schedule->user_id,
+                            isZakat:           $schedule->is_zakat,
+                            recurringScheduleId: $schedule->id,
+                        );
+
+                        $schedule->update([
+                            'next_charge_date' => $this->nextDate($schedule),
+                            'failure_count'    => 0,
+                        ]);
+                    } catch (\Throwable $e) {
+                        $this->handleFailure($schedule, $e);
+                    }
+                }
+            });
+    }
+}</code></pre>
+
+<!-- ============================================================ -->
+<!-- 9. REALTIME -->
+<!-- ============================================================ -->
+<h1 class="chapter"><span class="num">09</span> Realtime Layer (Reverb + FCM)</h1>
+
+<h2 class="sub">9.1 Reverb (Web)</h2>
+<p><strong>Channel:</strong> <code>{tenantId}_fundraising_event_{eventId}</code> (public — no <code>/broadcasting/auth</code>).</p>
+<p><strong>Event name:</strong> <code>.fundraising-event.progress.updated</code></p>
+<p><strong>Payload (absolute values only):</strong></p>
+<pre><code>{
+  "tenant_id": "acme",
+  "event_id": 12,
+  "raised_amount": "1590.00",
+  "current_target_amount": "5000.00",
+  "target_amount": "5000.00",
+  "tickets": [
+    { "ticket_type_id": 7, "sold": 20, "remaining": 30 }
+  ],
+  "tickets_sold_total": 20,
+  "share_count": 43,
+  "cause": "donation",     // donation | tickets | target_increase | refund
+  "as_of": "2026-08-10T14:05:10+00:00"
+}</code></pre>
+
+<h2 class="sub">9.2 FCM (Mobile)</h2>
+<p>All data values MUST be strings (enforced by <code>FirebaseService::buildPayload</code>).</p>
+
+<h3 class="subsub">Payload types (v2.0 additions highlighted)</h3>
+<table>
+  <tr><th>type</th><th>Trigger</th><th>Key data fields</th></tr>
+  <tr><td><code>event_ticket_confirmation</code></td><td>Ticket issuance (queued)</td><td>tenant_id, event_id, quantity, payment_flow_id, ticket_codes</td></tr>
+  <tr><td><code>event_reminder</code></td><td>Scheduled job</td><td>event_id, event_title, start_at, location</td></tr>
+  <tr><td><code>ticket_hold_released</code></td><td>Concurrent commit by another buyer</td><td>ticket_type_id, event_id, reason=purchased_by_another</td></tr>
+  <tr><td><code>ticket_availability</code></td><td>Hold expiry or refund</td><td>ticket_type_id, event_id, available_quantity</td></tr>
+  <tr><td><code>refund_confirmation</code></td><td>Refund completed</td><td>refund_id, amount, currency_code, type</td></tr>
+  <tr><td><code>recurring_donation_reminder</code></td><td>24h before charge</td><td>schedule_id, amount, next_charge_date</td></tr>
+  <tr><td><code>event_progress</code></td><td>Progress broadcast mirror</td><td>all progress fields stringified + tenant_id</td></tr>
+</table>
+
+<h3 class="subsub">Icon configuration</h3>
+<pre><code>// config/services.php
+'firebase' =&gt; [
+    'notification_icon' =&gt; env('FCM_ICON_URL', 'https://cdn.together.app/icons/notification_icon.png'),
+],</code></pre>
+<p>Applied in <code>FirebaseService::buildPayload()</code> on every notification node.</p>
+
+<!-- ============================================================ -->
+<!-- 10. FEATURE-BY-FEATURE -->
+<!-- ============================================================ -->
+<h1 class="chapter"><span class="num">10</span> Feature-by-Feature Implementation Guide</h1>
+
+<h2 class="sub">10.1 Recurring Donations</h2>
+<p><strong>Backend:</strong></p>
+<ol>
+  <li>Migration: <code>recurring_donation_schedules</code> (§4.1).</li>
+  <li>On <code>CompleteCheckoutService</code>: if <code>selection.recurring === true</code>, create a Stripe Subscription (not a one-shot PaymentIntent).</li>
+  <li>Persist schedule row, dispatch <code>RecurringDonationCreated</code>.</li>
+  <li>Daily <code>ProcessRecurringDonationsJob</code> charges and dispatches <code>EventDonationCompleted(source=recurring)</code>.</li>
+  <li>Cancel endpoint: <code>DELETE /api/v1/fundraising/client/recurring/{id}</code> → sets status=cancelled + calls Stripe cancel.</li>
+</ol>
+<p><strong>Frontend:</strong> Add a radio in the donate widget, send <code>recurring</code> + <code>frequency</code>.</p>
+<p><strong>Mobile:</strong> Same in <code>DonateSheet</code>.</p>
+
+<h2 class="sub">10.2 Per-User Ticket Limits</h2>
+<ol>
+  <li>Add columns to <code>fundraising_ticket_types</code>.</li>
+  <li>In <code>DbEventTicketReservationService::reserve()</code>:
+<pre><code>$alreadyPurchased = FundraisingTicket::query()
+    ->where('ticket_type_id', $ticketTypeId)
+    ->where('holder_user_id', $userId)
+    ->whereIn('status', ['issued', 'checked_in'])
+    ->count();
+
+$heldByUser = FundraisingTicketHold::query()
+    ->where('ticket_type_id', $ticketTypeId)
+    ->where('user_id', $userId)
+    ->where('expires_at', '&gt;', now())
+    ->sum('quantity');
+
+$limit = $ticketType->max_tickets_per_user;
+if ($limit !== null &amp;&amp; ($alreadyPurchased + $heldByUser + $quantity) &gt; $limit) {
+    throw new TicketUserLimitExceededException($ticketTypeId, $limit, $alreadyPurchased + $heldByUser);
+}</code></pre>
+  </li>
+  <li>Map exception to error code in <code>StartCheckoutPaymentController</code>.</li>
+</ol>
+
+<h2 class="sub">10.3 Refund System</h2>
+<p>See §6.2. Listener sketch:</p>
+<pre><code>class TicketsRefundedListener
+{
+    public function handle(EventTicketsRefunded $event): void
+    {
+        DB::transaction(function () use ($event) {
+            $ticketType = TicketType::lockForUpdate()->find($event->ticketTypeId);
+            $ticketType->decrement('tickets_sold_count', $event->quantity);
+
+            FundraisingTicket::whereIn('code', $event->ticketCodes)
+                ->update(['status' =&gt; 'refunded', 'refunded_at' =&gt; now()]);
+
+            FundraisingEvent::lockForUpdate()->find($event->eventId)
+                ->decrement('raised_amount', $event->amount);
+        });
+
+        broadcast(new FundraisingEventProgressUpdated($event->eventId, 'refund'))->toOthers();
+    }
+}</code></pre>
+
+<h2 class="sub">10.4 Promo Codes</h2>
+<p>See §6.3. Validation flow inside <code>StartCheckoutPaymentService</code>:</p>
+<pre><code>if (!empty($selection['promo_code'])) {
+    $promo = $validator->validate($selection['promo_code'], [$ticketTypeId]);
+    $discount = $validator->applyDiscount($promo, $subtotal);
+    $total = max(0, $subtotal - $discount);
+    // Defer consume() until after successful payment via listener.
+}</code></pre>
+<p>Consumption happens in <code>TicketsSoldListener</code> inside the same DB transaction that creates tickets.</p>
+
+<h2 class="sub">10.5 Offline Donations</h2>
+<p>See §6.1. The <code>OfflineDonationService</code>:</p>
+<pre><code>DB::transaction(function () use ($payload, $event) {
+    $donation = OfflineDonation::create($payload + ['recorded_by_admin_id' =&gt; auth()->id()]);
+    FundraisingEvent::lockForUpdate()->find($event->id)->increment('raised_amount', $donation->amount);
+
+    EventDonationRecord::create([
+        'event_id' =&gt; $event->id,
+        'donor_name' =&gt; $donation->donor_name,
+        'donor_email' =&gt; $donation->donor_email,
+        'amount' =&gt; $donation->amount,
+        'is_zakat' =&gt; $donation->is_zakat,
+        'source' =&gt; 'offline',
+        'status' =&gt; 'completed',
+    ]);
+});</code></pre>
+
+<h2 class="sub">10.6 Donation Records Table</h2>
+<p>Unified view; populated via listener/observer on the source tables (payments, billing_transactions, offline_donations, recurring_donation_schedules). Reconciled nightly to catch drift.</p>
+
+<h2 class="sub">10.7 Bundle Inventory Deduction</h2>
+<p>Schema: <code>is_bundle</code>, <code>bundle_size</code>, <code>bundle_parent_ticket_type_id</code> on <code>fundraising_ticket_types</code>.</p>
+<p>On reservation of a bundle:</p>
+<pre><code>$parentType = TicketType::lockForUpdate()->find($bundle->bundle_parent_ticket_type_id);
+$deduction  = $bundle->bundle_size * $quantity;
+
+if (($parentType->capacity - $parentType->tickets_sold_count) &lt; $deduction) {
+    throw new TicketCapacityExceededException($parentType->id, 0);
+}
+
+$parentType->increment('tickets_sold_count', $deduction);</code></pre>
+
+<h2 class="sub">10.8 Proportional Availability Constraint</h2>
+<p>Enforced at the resolver level:</p>
+<pre><code>$available = $parentType->capacity - $parentType->tickets_sold_count - $activeHolds;
+$isSoldOut = $bundle->bundle_size &gt; $available;</code></pre>
+<p>Returns <code>is_sold_out=true</code> on the ticket-type serialization.</p>
+
+<h2 class="sub">10.9 Hold-Race Notification</h2>
+<p>In <code>commit()</code>:</p>
+<pre><code>$hold = FundraisingTicketHold::lockForUpdate()->where('reservation_ref', $ref)-&gt;first();
+if ($hold &amp;&amp; $hold-&gt;user_id !== $currentUserId) {
+    $tokens = app(UserFirebaseTokensResolver::class)-&gt;tokensForUser($hold-&gt;user_id);
+    FirebaseService::sendToTokens($tokens, [
+        'type' =&gt; 'ticket_hold_released',
+        'ticket_type_id' =&gt; (string) $hold-&gt;ticket_type_id,
+        'event_id' =&gt; (string) $eventId,
+        'reason' =&gt; 'purchased_by_another',
+    ]);
+}</code></pre>
+
+<h2 class="sub">10.10 Sold-out Waitlist</h2>
+<p>Opt-in endpoint: <code>POST /api/v1/fundraising/client/tickets/{ticketType}/notify-me</code>.</p>
+<p>Trigger: <code>SweepExpiredHoldsJob</code> and refund listeners call <code>NotifyTicketAvailabilityJob</code> when capacity increases.</p>
+
+<h2 class="sub">10.11 Data Export Columns</h2>
+<p><strong>Tickets CSV:</strong> code, holder_name, holder_email, ticket_type_title, price, currency_code, status, purchased_at, checked_in_at, checked_in_by, payment_reference, promo_code_used, discount_applied.</p>
+<p><strong>Donations CSV:</strong> id, donor_name, donor_email, donor_user_id, amount, currency_code, is_zakat, source, status, transaction_id, created_at.</p>
+
+<h2 class="sub">10.12 Pledged vs Collected</h2>
+<p>Schema: <code>donation_pledges</code>. Progress API extended with:</p>
+<pre><code>{
+  "pledged_amount": "8500.00",
+  "collected_amount": "5500.00",
+  "fulfillment_ratio": 64.7
+}</code></pre>
+<p>Recurring schedules contribute their commitment to <code>pledged_amount</code> for the year.</p>
+
+<h2 class="sub">10.13 Add to Calendar</h2>
+<p>Endpoint: <code>GET /api/v1/fundraising/client/events/{id}/calendar.ics</code> — public, returns <code>text/calendar</code>.</p>
+<pre><code>BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+UID:event-{id}@{tenantId}
+DTSTART:{start_at_utc in Z format}
+DTEND:{end_at_utc}
+SUMMARY:{title}
+LOCATION:{venue_name}, {city}, {country}
+DESCRIPTION:{short_description}
+END:VEVENT
+END:VCALENDAR</code></pre>
+
+<h2 class="sub">10.14 Push Reminder Job</h2>
+<p>See §8. Reminder window is configurable via <code>config('together.events.reminder_window_minutes', 60)</code>.</p>
+
+<h2 class="sub">10.15 Manual Ticket Issuance</h2>
+<p>See §6.5. Generated tickets follow the same code format <code>FT-{ULID}</code> so QR scanning works identically.</p>
+
+<h2 class="sub">10.16 Bugs &amp; Small Fixes</h2>
+<table>
+  <tr><th>Item</th><th>Fix</th></tr>
+  <tr><td>Arabic title field error</td><td>Ensure <code>utf8mb4_unicode_ci</code> collation; validate with <code>Laravel mb_string</code>; sanitize RTL in the input helper.</td></tr>
+  <tr><td>Tier Name vs Sponsorship Tier</td><td>Correct the resource key in <code>SponsorTierResource</code> — was returning <code>type</code> instead of <code>name</code>.</td></tr>
+  <tr><td>Merge Date &amp; Time pickers</td><td>Replace with a single <code>datetime-local</code> input component; add migration if backend stores separately.</td></tr>
+  <tr><td>In-place reorder</td><td>Add <code>display_order</code> column + PATCH endpoint (§6.4); frontend uses <code>@dnd-kit</code>.</td></tr>
+  <tr><td>End Date / Duration</td><td>Add <code>end_at_utc</code> to the resource; render in list and detail.</td></tr>
+  <tr><td>Validation: donations &gt; target</td><td>Remove the strict <code>raised_amount &lt;= target_amount</code> validation; auto-increase handles over-target by design.</td></tr>
+  <tr><td>Smooth scroll "Be The First Donor"</td><td>Add <code>scrollIntoView({ behavior: 'smooth' })</code> on click to the donate section.</td></tr>
+  <tr><td>Search elements in builder</td><td>Add a filter input that highlights matching fields; no backend change.</td></tr>
+  <tr><td>Bundle &gt; single ticket validation</td><td>On the builder, warn if <code>bundle_size &gt; parent.capacity</code>; allow save but auto-mark as sold-out on the site.</td></tr>
+</table>
+
+<!-- ============================================================ -->
+<!-- 11. BACKEND WORK ITEMS -->
+<!-- ============================================================ -->
+<h1 class="chapter"><span class="num">11</span> Backend Work Items (BE-14 → BE-28)</h1>
+
+<table>
+  <tr><th>ID</th><th>Deliverable</th><th>Key Files</th><th>Depends</th></tr>
+  <tr><td><strong>BE-14</strong></td><td>Recurring donation schedules + processor job</td><td><code>RecurringDonationSchedule.php</code>, <code>ProcessRecurringDonationsJob.php</code></td><td>BE-1</td></tr>
+  <tr><td><strong>BE-15</strong></td><td>Per-user ticket limit check in reservation service</td><td><code>DbEventTicketReservationService.php</code>, <code>TicketUserLimitExceededException.php</code></td><td>BE-4</td></tr>
+  <tr><td><strong>BE-16</strong></td><td>Refund service (Stripe + events)</td><td><code>RefundService.php</code>, <code>RefundListener.php</code></td><td>BE-1</td></tr>
+  <tr><td><strong>BE-17</strong></td><td>Event reminder job</td><td><code>ScheduleEventRemindersJob.php</code></td><td>BE-7, BE-8</td></tr>
+  <tr><td><strong>BE-18</strong></td><td>Offline donation recording</td><td><code>OfflineDonationService.php</code>, migration</td><td>BE-1, BE-2</td></tr>
+  <tr><td><strong>BE-19</strong></td><td>Unified EventDonationRecord table</td><td><code>EventDonationRecord.php</code>, observers</td><td>BE-2</td></tr>
+  <tr><td><strong>BE-20</strong></td><td>Promo code service + validator</td><td><code>PromoCodeService.php</code>, exceptions</td><td>BE-1, BE-2</td></tr>
+  <tr><td><strong>BE-21</strong></td><td>Data export (CSV/XLSX streaming)</td><td><code>TicketExportService.php</code>, <code>DonationExportService.php</code></td><td>BE-2</td></tr>
+  <tr><td><strong>BE-22</strong></td><td>Hold-release notification in <code>commit()</code></td><td><code>DbEventTicketReservationService.php</code></td><td>BE-4, BE-7</td></tr>
+  <tr><td><strong>BE-23</strong></td><td>Sold-out waitlist + availability notifications</td><td><code>TicketAvailabilityOptIn.php</code>, <code>NotifyTicketAvailabilityJob.php</code></td><td>BE-2, BE-7</td></tr>
+  <tr><td><strong>BE-24</strong></td><td>Donations dashboard aggregation service</td><td><code>DonationDashboardService.php</code></td><td>BE-2, BE-19</td></tr>
+  <tr><td><strong>BE-25</strong></td><td>Ticket type reorder endpoint</td><td><code>ReorderTicketTypesController.php</code></td><td>BE-2</td></tr>
+  <tr><td><strong>BE-26</strong></td><td>My Tickets extra fields + calendar URL</td><td><code>TicketResource.php</code>, <code>EventCalendarController.php</code></td><td>BE-9</td></tr>
+  <tr><td><strong>BE-27</strong></td><td>Configurable FCM icon</td><td><code>config/services.php</code>, <code>FirebaseService.php</code></td><td>BE-8</td></tr>
+  <tr><td><strong>BE-28</strong></td><td>Bundle inventory + proportional constraint</td><td>Migration, <code>DbEventTicketReservationService.php</code></td><td>BE-4</td></tr>
+</table>
+
+<!-- ============================================================ -->
+<!-- 12. FRONTEND -->
+<!-- ============================================================ -->
+<h1 class="chapter"><span class="num">12</span> Frontend Work Items (FE-09 → FE-22)</h1>
+
+<table>
+  <tr><th>ID</th><th>Deliverable</th><th>Files</th><th>Depends</th></tr>
+  <tr><td><strong>FE-09</strong></td><td>Recurring toggle in donate widget</td><td><code>EventDonateWidget.jsx</code></td><td>FE-2, BE-14</td></tr>
+  <tr><td><strong>FE-10</strong></td><td>User-limit error handling UI</td><td><code>EventTicketSelector.jsx</code></td><td>FE-3, BE-15</td></tr>
+  <tr><td><strong>FE-11</strong></td><td>Promo code input + validation display</td><td><code>EventTicketSelector.jsx</code>, <code>checkout/page.js</code></td><td>FE-3, BE-20</td></tr>
+  <tr><td><strong>FE-12</strong></td><td>Admin refund dialog</td><td><code>dashboard/event-tickets/page.js</code></td><td>FE-7, BE-16</td></tr>
+  <tr><td><strong>FE-13</strong></td><td>Admin donations listing page</td><td><code>dashboard/event-donations/page.js</code></td><td>BE-19</td></tr>
+  <tr><td><strong>FE-14</strong></td><td>Drag &amp; drop ticket reorder</td><td><code>EventBuilder/tickets.jsx</code></td><td>BE-25</td></tr>
+  <tr><td><strong>FE-15</strong></td><td>Export buttons (CSV / XLSX)</td><td>Admin pages</td><td>BE-21</td></tr>
+  <tr><td><strong>FE-16</strong></td><td>Add-to-calendar button</td><td><code>FundraisingClient.jsx</code>, <code>TicketConfirmation.jsx</code></td><td>BE-26</td></tr>
+  <tr><td><strong>FE-17</strong></td><td>QR scanner for admin (react-qr-reader)</td><td><code>CheckInPanel.jsx</code></td><td>BE-10</td></tr>
+  <tr><td><strong>FE-18</strong></td><td>Offline donation form</td><td><code>OfflineDonationModal.jsx</code></td><td>BE-18</td></tr>
+  <tr><td><strong>FE-19</strong></td><td>Donations dashboard widget (charts)</td><td><code>DonationsDashboard.jsx</code></td><td>BE-24</td></tr>
+  <tr><td><strong>FE-20</strong></td><td>Sold-out waitlist button</td><td><code>EventTicketSelector.jsx</code></td><td>BE-23</td></tr>
+  <tr><td><strong>FE-21</strong></td><td>Sidebar category filter (web)</td><td><code>EventsFilterSidebar.jsx</code></td><td>BE-9</td></tr>
+  <tr><td><strong>FE-22</strong></td><td>My Tickets redesign</td><td><code>(client)/tickets/page.js</code></td><td>FE-6, BE-26</td></tr>
+</table>
+
+<!-- ============================================================ -->
+<!-- 13. MOBILE -->
+<!-- ============================================================ -->
+<h1 class="chapter"><span class="num">13</span> Mobile Work Items (MO-10 → MO-23)</h1>
+
+<table>
+  <tr><th>ID</th><th>Deliverable</th><th>Files</th><th>Depends</th></tr>
+  <tr><td><strong>MO-10</strong></td><td>Recurring donation option in donate sheet</td><td><code>donate_sheet.dart</code></td><td>MO-2, BE-14</td></tr>
+  <tr><td><strong>MO-11</strong></td><td>Per-user limit error UI</td><td><code>event_checkout_bloc.dart</code></td><td>MO-4, BE-15</td></tr>
+  <tr><td><strong>MO-12</strong></td><td>Admin mobile ticket view</td><td><code>admin_tickets_page.dart</code></td><td>BE-10</td></tr>
+  <tr><td><strong>MO-13</strong></td><td>Refund UI for admin</td><td><code>admin_ticket_detail_page.dart</code></td><td>MO-12, BE-16</td></tr>
+  <tr><td><strong>MO-14</strong></td><td>Event reminder notification handler</td><td><code>push_notification_service.dart</code></td><td>BE-17</td></tr>
+  <tr><td><strong>MO-15</strong></td><td>Add to calendar (add_2_calendar)</td><td><code>event_details.dart</code></td><td>BE-26</td></tr>
+  <tr><td><strong>MO-16</strong></td><td>QR scanner for admin (qr_code_scanner)</td><td><code>qr_scan_page.dart</code></td><td>MO-12</td></tr>
+  <tr><td><strong>MO-17</strong></td><td>External QR scanner app — deferred to v3.0</td><td>—</td><td>—</td></tr>
+  <tr><td><strong>MO-18</strong></td><td>Offline donation recording (admin)</td><td><code>offline_donation_form.dart</code></td><td>MO-12, BE-18</td></tr>
+  <tr><td><strong>MO-19</strong></td><td>Promo code field in checkout</td><td><code>ticket_type_selector_sheet.dart</code></td><td>MO-3, BE-20</td></tr>
+  <tr><td><strong>MO-20</strong></td><td>Donations dashboard (mobile admin)</td><td><code>admin_dashboard_page.dart</code></td><td>BE-24</td></tr>
+  <tr><td><strong>MO-21</strong></td><td>My Tickets design refresh + offline QR</td><td><code>ticket_confirmation_page.dart</code>, <code>my_tickets_bloc.dart</code></td><td>MO-5, BE-26</td></tr>
+  <tr><td><strong>MO-22</strong></td><td>Sold-out waitlist button</td><td><code>ticket_type_selector_sheet.dart</code></td><td>BE-23</td></tr>
+  <tr><td><strong>MO-23</strong></td><td>Sidebar category filter drawer</td><td><code>events_filter_drawer.dart</code></td><td>BE-9</td></tr>
+</table>
+
+<!-- ============================================================ -->
+<!-- 14. TESTING -->
+<!-- ============================================================ -->
+<h1 class="chapter"><span class="num">14</span> Testing Strategy</h1>
+
+<h2 class="sub">14.1 Backend (Pest)</h2>
+<ul>
+  <li><strong>Feature tests:</strong> every endpoint — happy path + each registry error.</li>
+  <li><strong>Concurrency:</strong> two parallel <code>reserve()</code> calls for the last seat — one succeeds, one receives <code>EVENT_TICKET_CAPACITY_EXCEEDED</code>.</li>
+  <li><strong>Idempotency:</strong> replay the same webhook twice — no double ticket issuance; no double <code>raised_amount</code> increment.</li>
+  <li><strong>Reconciliation:</strong> seed drift → run job → assert corrected.</li>
+  <li><strong>Recurring:</strong> simulate Stripe charge success and failure; verify <code>next_charge_date</code> rollover, <code>failure_count</code> handling, auto-cancel after 3.</li>
+  <li><strong>Refund:</strong> full refund, partial refund, refund of already-refunded ticket → <code>EVENT_REFUND_ALREADY_PROCESSED</code>.</li>
+  <li><strong>Promo codes:</strong> expired, usage-limit reached, wrong ticket type, concurrent redemption atomicity.</li>
+  <li><strong>Bundle:</strong> bundle purchase deducts correct quantity; proportional constraint returns Sold Out.</li>
+  <li><strong>User limits:</strong> concurrent purchase of the last allowed ticket → only one passes.</li>
+</ul>
+
+<h2 class="sub">14.2 Frontend (Jest + RTL)</h2>
+<ul>
+  <li>Payload builders (<code>toEventDonationCartItem</code>, <code>toDirectTicketCheckout</code>) snapshot tests.</li>
+  <li>Error code branches (422 codes + 409 mismatch).</li>
+  <li>Recurring toggle state → payload shape.</li>
+  <li>Poll-timeout behavior on <code>/tickets?payment_flow_id=</code>.</li>
+</ul>
+
+<h2 class="sub">14.3 Mobile (Flutter Test)</h2>
+<ul>
+  <li>Model <code>fromJson</code> round-trips against v2.0 fixtures.</li>
+  <li>Bloc tests: <code>EventCheckoutBloc</code> failure branches for every code.</li>
+  <li>FCM navigation switch — including unknown type default.</li>
+  <li>Topic subscribe/unsubscribe lifecycle.</li>
+  <li>Cart ID regression (top-level only).</li>
+</ul>
+
+<h2 class="sub">14.4 End-to-End (M3)</h2>
+<ul>
+  <li>Guest → login → recurring donation → progress bar updates on web + mobile.</li>
+  <li>Two concurrent buyers on last ticket: one succeeds, one receives <code>EVENT_TICKET_CAPACITY_EXCEEDED</code> + hold-release FCM.</li>
+  <li>Bundle purchase reduces individual capacity correctly.</li>
+  <li>Refund frees a seat → waitlist user gets <code>ticket_availability</code> push.</li>
+  <li>Manual offline donation → raised_amount updates without Stripe.</li>
+  <li>Data export downloads correct number of rows for tickets &amp; donations.</li>
+</ul>
+
+<!-- ============================================================ -->
+<!-- 15. DEPLOYMENT -->
+<!-- ============================================================ -->
+<h1 class="chapter"><span class="num">15</span> Deployment &amp; Rollout Plan</h1>
+
+<h2 class="sub">15.1 Order of Operations</h2>
+<ol>
+  <li><strong>BE-1 (Core):</strong> enums, contracts, integration events — merge first.</li>
+  <li><strong>BE-2 (migrations):</strong> run on tenant DBs.</li>
+  <li><strong>Restart Horizon:</strong> mandatory — old workers throw on new enum values.</li>
+  <li><strong>BE-3 → BE-13 (v1.1 features):</strong> if not already deployed.</li>
+  <li><strong>BE-14 → BE-28 (v2.0 features):</strong> merge in waves; each wave is feature-flag gated.</li>
+  <li><strong>FE / MO:</strong> deploy clients only after backend reports stable on staging for 48h.</li>
+</ol>
+
+<h2 class="sub">15.2 Feature Flags</h2>
+<pre><code>// config/features.php
+return [
+    'fundraising_events.recurring_donations' =&gt; env('FF_RECURRING', false),
+    'fundraising_events.refunds'             =&gt; env('FF_REFUNDS', false),
+    'fundraising_events.promo_codes'         =&gt; env('FF_PROMO', false),
+    'fundraising_events.bundle_support'      =&gt; env('FF_BUNDLE', false),
+    'fundraising_events.waitlist'            =&gt; env('FF_WAITLIST', false),
+];</code></pre>
+
+<h2 class="sub">15.3 Rollback Plan</h2>
+<ul>
+  <li>Feature flags can disable each v2.0 feature independently without DB rollback.</li>
+  <li>Refund endpoint can be disabled while keeping historical refund rows intact.</li>
+  <li>Recurring job can be paused via <code>php artisan schedule:pause</code> without affecting existing schedules.</li>
+</ul>
+
+<!-- ============================================================ -->
+<!-- 16. RISKS -->
+<!-- ============================================================ -->
+<h1 class="chapter"><span class="num">16</span> Risks &amp; Mitigations</h1>
+
+<table>
+  <tr><th>Risk</th><th>Likelihood</th><th>Impact</th><th>Mitigation</th></tr>
+  <tr>
+    <td>Dual donation ledgers (payments vs billing_transactions)</td>
+    <td>Medium</td><td>High</td>
+    <td>Single client path; reconciliation sums both; drift tests</td>
+  </tr>
+  <tr>
+    <td>Overselling under concurrency</td>
+    <td>Low</td><td>High</td>
+    <td>Row-locked TTL holds; single-writer commit</td>
+  </tr>
+  <tr>
+    <td>Webhook replay corruption</td>
+    <td>Medium</td><td>High</td>
+    <td>Transition-guarded mirror; source_reference-keyed issuance; nightly reconciliation</td>
+  </tr>
+  <tr>
+    <td>Deploy ordering</td>
+    <td>Medium</td><td>High</td>
+    <td>Deploy enums + migrations atomically; Horizon restart</td>
+  </tr>
+  <tr>
+    <td>Stripe refund failure (insufficient balance)</td>
+    <td>Low</td><td>Medium</td>
+    <td>Job retry with backoff; admin notification; manual reconciliation</td>
+  </tr>
+  <tr>
+    <td>Recurring charge failure</td>
+    <td>Medium</td><td>Medium</td>
+    <td>Retry logic; auto-cancel after 3 failures; user + admin notification</td>
+  </tr>
+  <tr>
+    <td>Promo code concurrent redemption</td>
+    <td>Low</td><td>Medium</td>
+    <td>Atomic increment inside DB transaction</td>
+  </tr>
+  <tr>
+    <td>Bundle deduction race</td>
+    <td>Low</td><td>High</td>
+    <td>Parent row lock during bundle reservation</td>
+  </tr>
+  <tr>
+    <td>FCM delivery under Doze / throttling</td>
+    <td>High</td><td>Low</td>
+    <td>Polling fallback; re-fetch on resume; best-effort semantics documented</td>
+  </tr>
+  <tr>
+    <td>Data export memory pressure</td>
+    <td>Medium</td><td>Medium</td>
+    <td>Streaming response; chunked query; no in-memory collection</td>
+  </tr>
+</table>
+
+<!-- ============================================================ -->
+<!-- 17. APPENDIX A -->
+<!-- ============================================================ -->
+<h1 class="chapter"><span class="num">17</span> Appendix A — Full Endpoint Index</h1>
+
+<table>
+  <tr><th>Method</th><th>Path</th><th>Auth</th><th>Purpose</th></tr>
+  <tr><td>POST</td><td><code>/billing/client/checkout/create/flow</code></td><td>Yes</td><td>Direct checkout (donation/ticket)</td></tr>
+  <tr><td>POST</td><td><code>/billing/client/checkout/payment/start</code></td><td>Yes</td><td>Take hold + create PaymentIntent</td></tr>
+  <tr><td>GET</td><td><code>/fundraising/client/events/{id}</code></td><td>No</td><td>Event detail</td></tr>
+  <tr><td>GET</td><td><code>/fundraising/client/events/{id}/progress</code></td><td>No</td><td>Progress + tenant_id</td></tr>
+  <tr><td>GET</td><td><code>/fundraising/client/events/{id}/calendar.ics</code></td><td>No</td><td>Calendar ICS</td></tr>
+  <tr><td>GET</td><td><code>/fundraising/client/tickets</code></td><td>Yes</td><td>My Tickets</td></tr>
+  <tr><td>POST</td><td><code>/fundraising/client/tickets/{type}/notify-me</code></td><td>Yes</td><td>Waitlist opt-in</td></tr>
+  <tr><td>DELETE</td><td><code>/fundraising/client/recurring/{id}</code></td><td>Yes</td><td>Cancel recurring schedule</td></tr>
+  <tr><td>GET</td><td><code>/fundraising/admin/events/{event}/tickets</code></td><td>Admin</td><td>Ticket list</td></tr>
+  <tr><td>GET</td><td><code>/fundraising/admin/events/{event}/tickets/stats</code></td><td>Admin</td><td>Stats</td></tr>
+  <tr><td>POST</td><td><code>/fundraising/admin/events/{event}/tickets/check-in</code></td><td>Admin</td><td>Check-in</td></tr>
+  <tr><td>POST</td><td><code>/fundraising/admin/events/{event}/tickets/manual</code></td><td>Admin</td><td>Manual issue</td></tr>
+  <tr><td>GET</td><td><code>/fundraising/admin/events/{event}/tickets/export</code></td><td>Admin</td><td>Export tickets</td></tr>
+  <tr><td>POST</td><td><code>/fundraising/admin/events/{event}/tickets/{ticket}/refund</code></td><td>Admin</td><td>Refund ticket</td></tr>
+  <tr><td>GET</td><td><code>/fundraising/admin/events/{event}/donations</code></td><td>Admin</td><td>Donations list</td></tr>
+  <tr><td>POST</td><td><code>/fundraising/admin/events/{event}/donations/offline</code></td><td>Admin</td><td>Record offline donation</td></tr>
+  <tr><td>POST</td><td><code>/fundraising/admin/events/{event}/donations/{id}/refund</code></td><td>Admin</td><td>Refund donation</td></tr>
+  <tr><td>GET</td><td><code>/fundraising/admin/events/{event}/donations/dashboard</code></td><td>Admin</td><td>Dashboard stats</td></tr>
+  <tr><td>GET</td><td><code>/fundraising/admin/events/{event}/donations/export</code></td><td>Admin</td><td>Export donations</td></tr>
+  <tr><td>POST</td><td><code>/fundraising/admin/events/{event}/promo-codes</code></td><td>Admin</td><td>Create promo code</td></tr>
+  <tr><td>GET</td><td><code>/fundraising/admin/events/{event}/promo-codes</code></td><td>Admin</td><td>List promo codes</td></tr>
+  <tr><td>PATCH</td><td><code>/fundraising/admin/events/{event}/promo-codes/{id}</code></td><td>Admin</td><td>Update promo code</td></tr>
+  <tr><td>DELETE</td><td><code>/fundraising/admin/events/{event}/promo-codes/{id}</code></td><td>Admin</td><td>Delete promo code</td></tr>
+  <tr><td>PATCH</td><td><code>/fundraising/admin/events/{event}/ticket-types/reorder</code></td><td>Admin</td><td>Reorder ticket types</td></tr>
+</table>
+
+<!-- ============================================================ -->
+<!-- 18. APPENDIX B -->
+<!-- ============================================================ -->
+<h1 class="chapter"><span class="num">18</span> Appendix B — Glossary</h1>
+
+<table>
+  <tr><th>Term</th><th>Definition</th></tr>
+  <tr><td><strong>Direct Checkout</strong></td><td>The one-tap purchase path via Billing module — no cart involvement.</td></tr>
+  <tr><td><strong>Hold</strong></td><td>A row-locked reservation of ticket quantity with a 30-minute TTL, taken at <code>payment/start</code>.</td></tr>
+  <tr><td><strong>Soft Check</strong></td><td>A non-committing availability verification at <code>create/flow</code>.</td></tr>
+  <tr><td><strong>Commit</strong></td><td>The single-writer step in the listener that consumes the hold and creates tickets.</td></tr>
+  <tr><td><strong>Bundle</strong></td><td>A ticket type that deducts N individual tickets from the parent type when purchased.</td></tr>
+  <tr><td><strong>Proportional Constraint</strong></td><td>The rule that a bundle is available only if <code>parent.remaining &gt;= bundle.size</code>.</td></tr>
+  <tr><td><strong>Pledged</strong></td><td>A committed donation that has not yet been collected (deferred, check, recurring commitment).</td></tr>
+  <tr><td><strong>Opt-In (Waitlist)</strong></td><td>A user's request to be notified when a sold-out ticket becomes available.</td></tr>
+  <tr><td><strong>Hold Race</strong></td><td>Concurrent payment where one user's hold is displaced by another's completed purchase.</td></tr>
+  <tr><td><strong>Idempotency Key</strong></td><td><code>source_reference</code> + <code>seq_no</code> on ticket rows; prevents duplicate issuance on webhook replay.</td></tr>
+</table>
+
+<footer>
+  <strong>Fundraising Events Completion v2.0</strong> — Developer Technical Specification<br>
+  Prepared for Engineering Teams · 31 August 2026 · Confidential
+</footer>
+
+</div>
+</body>
+</html>
