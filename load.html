@@ -1,0 +1,380 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Event Day Load Test</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a single report column; verdict first, then evidence per run, then causes and actions. */
+:root {
+  --bg: #f4f5f7;
+  --surface: #ffffff;
+  --ink: #16191f;
+  --muted: #5b6270;
+  --rule: #dfe2e8;
+  --accent: #23508a;
+  --accent-soft: #e6edf6;
+  --ok: #17663f;
+  --ok-soft: #e0f2e8;
+  --warn: #8a5300;
+  --warn-soft: #fbefd8;
+  --bad: #a3231c;
+  --bad-soft: #fbe3e1;
+  --shadow: 0 1px 2px rgb(22 25 31 / 6%), 0 8px 22px rgb(22 25 31 / 6%);
+  --font-body: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+  --font-head: 'IBM Plex Sans Condensed', 'Arial Narrow', 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #101317;
+    --surface: #171b21;
+    --ink: #e5e8ed;
+    --muted: #9aa3b0;
+    --rule: #2a313b;
+    --accent: #8fb6e8;
+    --accent-soft: #1a2738;
+    --ok: #7fd3a4;
+    --ok-soft: #163326;
+    --warn: #f2c26b;
+    --warn-soft: #3a2c12;
+    --bad: #f3a19a;
+    --bad-soft: #3d1c1a;
+    --shadow: 0 1px 2px rgb(0 0 0 / 40%), 0 8px 22px rgb(0 0 0 / 30%);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #101317;
+  --surface: #171b21;
+  --ink: #e5e8ed;
+  --muted: #9aa3b0;
+  --rule: #2a313b;
+  --accent: #8fb6e8;
+  --accent-soft: #1a2738;
+  --ok: #7fd3a4;
+  --ok-soft: #163326;
+  --warn: #f2c26b;
+  --warn-soft: #3a2c12;
+  --bad: #f3a19a;
+  --bad-soft: #3d1c1a;
+  --shadow: 0 1px 2px rgb(0 0 0 / 40%), 0 8px 22px rgb(0 0 0 / 30%);
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 16px/1.6 var(--font-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 40px 72px;
+}
+main { max-width: 1040px; margin-inline: auto; display: grid; gap: 52px; }
+h1, h2, h3 { font-family: var(--font-head); line-height: 1.15; margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(2rem, 4.4vw, 2.8rem); font-weight: 700; }
+h2 { font-size: 1.6rem; font-weight: 700; }
+h3 { font-size: 1.2rem; font-weight: 600; }
+p { margin: 0; }
+a { color: var(--accent); text-underline-offset: 3px; }
+code, .mono { font-family: var(--font-mono); font-size: 0.86em; }
+code { background: var(--accent-soft); padding: 0.06em 0.35em; border-radius: 4px; overflow-wrap: anywhere; }
+.eyebrow { font: 500 0.76rem/1 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.lede { color: var(--muted); max-width: 72ch; font-size: 1.06rem; }
+ul, ol { margin: 0; padding-inline-start: 1.25em; display: grid; gap: 6px; }
+
+header.top { display: grid; gap: 18px; }
+.verdict { background: var(--bad-soft); border: 1px solid color-mix(in srgb, var(--bad) 40%, transparent); border-radius: 12px; padding: 18px 20px; display: grid; gap: 10px; }
+.verdict h2 { color: var(--bad); font-size: 1.35rem; }
+.verdict ul { max-width: 80ch; }
+.meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; }
+.meta div { background: var(--surface); padding: 12px 14px; display: grid; gap: 3px; }
+.meta dt { font: 500 0.7rem/1.2 var(--font-mono); letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); }
+.meta dd { margin: 0; font-size: 0.94rem; overflow-wrap: anywhere; }
+
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.tile { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 14px 16px; display: grid; gap: 4px; }
+.tile b { font: 700 1.7rem/1.1 var(--font-head); font-variant-numeric: tabular-nums; }
+.tile span { color: var(--muted); font-size: 0.9rem; }
+.tile.bad b { color: var(--bad); }
+.tile.ok b { color: var(--ok); }
+
+section { display: grid; gap: 20px; }
+section > header { display: grid; gap: 8px; border-top: 2px solid var(--ink); padding-top: 14px; }
+section > header p { color: var(--muted); max-width: 74ch; }
+
+.card { background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; box-shadow: var(--shadow); padding: 20px 22px; display: grid; gap: 14px; min-width: 0; }
+.card-head { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+.card-head h3 { flex: 1 1 280px; }
+.chip { display: inline-block; font: 500 0.74rem/1 var(--font-mono); padding: 5px 9px; border-radius: 999px; white-space: nowrap; }
+.chip.pass { color: var(--ok); background: var(--ok-soft); }
+.chip.fail { color: var(--bad); background: var(--bad-soft); }
+.chip.skip { color: var(--warn); background: var(--warn-soft); }
+
+.table-wrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 0.92rem; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font: 500 0.72rem/1.3 var(--font-mono); letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); background: var(--bg); }
+tr:last-child td { border-bottom: 0; }
+td.n { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--font-mono); font-size: 0.86rem; white-space: nowrap; }
+td.good { color: var(--ok); font-weight: 600; }
+td.badc { color: var(--bad); font-weight: 600; }
+td.warnc { color: var(--warn); font-weight: 600; }
+
+.steps { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
+.step { border-radius: 10px; padding: 12px; display: grid; gap: 4px; border: 1px solid var(--rule); background: var(--surface); }
+.step small { color: var(--muted); font-size: 0.78rem; }
+.step b { font: 700 1.05rem/1.2 var(--font-head); }
+.step span { font-size: 0.82rem; font-family: var(--font-mono); }
+.step.ok { background: var(--ok-soft); border-color: transparent; }
+.step.slow { background: var(--warn-soft); border-color: transparent; }
+.step.down { background: var(--bad-soft); border-color: transparent; }
+.step.na { opacity: 0.55; }
+@media (max-width: 760px) { .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.note { font-size: 0.93rem; color: var(--muted); border-inline-start: 3px solid var(--rule); padding-inline-start: 12px; max-width: 80ch; }
+.note b { color: var(--ink); }
+.callout { border-inline-start: 3px solid var(--bad); background: var(--bad-soft); padding: 12px 14px; border-radius: 0 8px 8px 0; display: grid; gap: 6px; }
+.callout b { color: var(--bad); }
+
+.recs { display: grid; gap: 14px; }
+.rec { background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; padding: 16px 18px; display: grid; grid-template-columns: 112px 1fr; gap: 14px; }
+.rec .pri { font: 600 0.76rem/1.2 var(--font-mono); text-transform: uppercase; letter-spacing: 0.05em; display: grid; gap: 4px; align-content: start; }
+.rec .pri.p1 { color: var(--bad); }
+.rec .pri.p2 { color: var(--warn); }
+.rec .pri.p3 { color: var(--accent); }
+.rec .pri small { color: var(--muted); text-transform: none; letter-spacing: 0; font-family: var(--font-body); font-weight: 400; }
+.rec h3 { font-size: 1.08rem; margin-bottom: 4px; }
+.rec .body { display: grid; gap: 8px; min-width: 0; }
+@media (max-width: 600px) { .rec { grid-template-columns: 1fr; } }
+
+footer { color: var(--muted); font-size: 0.88rem; border-top: 1px solid var(--rule); padding-top: 16px; display: grid; gap: 6px; }
+</style>
+
+<main>
+  <header class="top">
+    <span class="eyebrow">Load test · test environment · loadtest organisation · 20 October 2026</span>
+    <h1>Event Day Load Test</h1>
+    <p class="lede">Results of the Smoke, Load and Stress runs from the October load test plan, the breaking point of the current setup, why it breaks, and what to change before the event day.</p>
+
+    <div class="verdict">
+      <h2>Not ready for the event day</h2>
+      <ul>
+        <li>The server holds about <b>20 requests per second</b> with acceptable speed. The plan's Load run needs about 150 requests per second; the event day (10,000 visitors, thousands with the page open) needs several hundred.</li>
+        <li>At the expected load, <b>99.9% of requests failed</b> (HTTP 503 and 20–30 s timeouts) from the first minute to the last.</li>
+        <li><b>Buyers got errors for purchases that succeeded:</b> 9 free tickets were issued while the buyer received only errors. On the real day a buyer would retry and buy twice.</li>
+        <li>No 429s: the rate limits were not the problem. The failures come from the hosting layer running out of capacity, and the application is slow even with no load (300–500 ms for the progress bar).</li>
+      </ul>
+    </div>
+
+    <dl class="meta">
+      <div><dt>API</dt><dd>npos-saas-test-46boh9.laravel.cloud (Laravel Cloud behind Cloudflare)</dd></div>
+      <div><dt>Organisation</dt><dd>loadtest, checked 880 times during the runs, never another tenant</dd></div>
+      <div><dt>Tool</dt><dd>k6 2.2.0, 1 machine (8 cores, Egypt), network 40 ms to Cloudflare Marseille</dd></div>
+      <div><dt>Runs (UTC)</dt><dd>Smoke 09:27–09:28 · Load 09:33–09:48 · Stress 09:52–09:58</dd></div>
+    </dl>
+
+    <div class="tiles">
+      <div class="tile ok"><b>~20 req/s</b><span>Highest rate served within 1 s, no errors (10% of the planned Load)</span></div>
+      <div class="tile bad"><b>99.9%</b><span>Of requests failed during the 15-minute Load run</span></div>
+      <div class="tile bad"><b>9</b><span>Tickets issued while the buyer saw an error</span></div>
+      <div class="tile"><b>0</b><span>429 responses in all runs</span></div>
+    </div>
+  </header>
+
+  <!-- ===================== RUNS ===================== -->
+  <section id="runs">
+    <header>
+      <span class="eyebrow">Results per run</span>
+      <h2>Smoke, Load and Stress</h2>
+      <p>Each run followed the plan's mix: new visitors (layout calls + event page + progress, then 3–10 s reading), visitors staying on the page (progress every 10 s) and buyers (free ticket, then "my tickets" after 1, 2, 3, 5, 5 s).</p>
+    </header>
+
+    <article class="card">
+      <div class="card-head"><h3>1. Smoke · 1 minute, up to 5 users</h3><span class="chip pass">Passed</span></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Criterion</th><th>Target</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td>Browsing errors</td><td>&lt; 1%</td><td class="good">0%</td></tr>
+          <tr><td>Browsing p95</td><td>&lt; 1.5 s</td><td class="good">657 ms</td></tr>
+          <tr><td>Progress p95</td><td>&lt; 0.8 s</td><td class="warnc">721 ms (p99 1,027 ms)</td></tr>
+          <tr><td>Purchase</td><td>ticket issued</td><td class="good">issued, visible in "my tickets" after 1.4 s</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">Even with no load, the API answers in 300–650 ms per request (median). The network is only 40 ms of that: the rest is server time. The progress bar already uses most of its 0.8 s budget before any load.</p>
+    </article>
+
+    <article class="card">
+      <div class="card-head"><h3>2. Load · 15 minutes, 300 → 600 new visitors/min, 1,000 staying, buyers</h3><span class="chip fail">Failed</span></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Criterion</th><th>Target</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td>Browsing errors (5xx and timeouts)</td><td>&lt; 1%</td><td class="badc">99.91%</td></tr>
+          <tr><td>Browsing p95</td><td>&lt; 1.5 s</td><td class="badc">20.2 s</td></tr>
+          <tr><td>Progress p95</td><td>&lt; 0.8 s</td><td class="badc">20.2 s (p99 30 s timeout)</td></tr>
+          <tr><td>Purchase errors</td><td>&lt; 2%</td><td class="badc">100% seen by the buyer (9 of them were in fact issued)</td></tr>
+          <tr><td>429s caused by the server</td><td>0</td><td class="good">0</td></tr>
+        </tbody>
+      </table></div>
+      <p>138,686 requests in 932 s (148.8 req/s sent). The failures started in the first minute, at 300 new visitors/min, and lasted the whole run. Median response 210 ms (fast rejections), p95 20 s (requests waiting until the edge gave up).</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Endpoint</th><th>Requests</th><th>OK</th><th>5xx</th><th>Timeouts</th><th>p50</th><th>p95</th></tr></thead>
+        <tbody>
+          <tr><td>branding</td><td class="n">8,081</td><td class="n">9</td><td class="n">8,064</td><td class="n">8</td><td class="n">208 ms</td><td class="n">20.2 s</td></tr>
+          <tr><td>tenant/info</td><td class="n">8,081</td><td class="n">9</td><td class="n">8,067</td><td class="n">5</td><td class="n">215 ms</td><td class="n">20.2 s</td></tr>
+          <tr><td>languages</td><td class="n">8,081</td><td class="n">13</td><td class="n">8,063</td><td class="n">5</td><td class="n">217 ms</td><td class="n">20.2 s</td></tr>
+          <tr><td>header navigation</td><td class="n">8,081</td><td class="n">1</td><td class="n">8,074</td><td class="n">6</td><td class="n">251 ms</td><td class="n">20.3 s</td></tr>
+          <tr><td>footer</td><td class="n">8,081</td><td class="n">8</td><td class="n">8,069</td><td class="n">4</td><td class="n">243 ms</td><td class="n">20.2 s</td></tr>
+          <tr><td>social links</td><td class="n">8,081</td><td class="n">8</td><td class="n">8,062</td><td class="n">11</td><td class="n">232 ms</td><td class="n">20.2 s</td></tr>
+          <tr><td>contact info</td><td class="n">8,081</td><td class="n">7</td><td class="n">8,065</td><td class="n">9</td><td class="n">205 ms</td><td class="n">20.2 s</td></tr>
+          <tr><td>event page (by slug)</td><td class="n">7,996</td><td class="n">0</td><td class="n">7,990</td><td class="n">6</td><td class="n">209 ms</td><td class="n">20.2 s</td></tr>
+          <tr><td>progress</td><td class="n">73,885</td><td class="n">436</td><td class="n">71,138</td><td class="n">2,311</td><td class="n">203 ms</td><td class="n">20.2 s</td></tr>
+          <tr><td>ticket intent (buy)</td><td class="n">118</td><td class="n">0</td><td class="n">113</td><td class="n">5</td><td class="n">193 ms</td><td class="n">20.4 s</td></tr>
+          <tr><td>my tickets</td><td class="n">118</td><td class="n">0</td><td class="n">111</td><td class="n">7</td><td class="n">208 ms</td><td class="n">29.8 s</td></tr>
+        </tbody>
+      </table></div>
+      <div class="callout">
+        <p><b>Purchases succeeded while the buyer saw an error.</b> The buyer account holds 10 tickets for the event: 1 from Smoke (09:27 UTC) and 9 issued between 09:33 and 09:37 UTC, during the Load run, when every purchase response k6 received was a 5xx or a timeout. The buyer was then refused with "You have reached the maximum of 10 free tickets for this event".</p>
+        <p>On the real day this means: a buyer sees an error, tries again, and gets (or pays for) a second ticket. For paid tickets this is the "charged exactly once" risk in section 8 of the plan.</p>
+      </div>
+      <p class="note"><b>After the run:</b> the first request at 09:49 UTC waited 85 s and got a 504; the next ones answered normally in about 0.7 s. The environment recovered by itself within a couple of minutes.</p>
+    </article>
+
+    <article class="card">
+      <div class="card-head"><h3>3. Stress · where it breaks</h3><span class="chip fail">Breaks at 20–35% of Load</span></div>
+      <p>The plan's Stress run starts at 600 visitors/min, which already failed completely in the Load run, so it could not show where the server breaks. It was run as a stepped test instead: the Load mix (600 new visitors/min + 1,000 staying) at 10, 20, 35, 50, 75 and 100%, 3 minutes per step, stopping on its own once a step passed 30% errors.</p>
+      <div class="steps">
+        <div class="step ok"><small>Step 1 · 10% of Load</small><b>~19 req/s</b><span>p95 0.9 s · 0% err</span></div>
+        <div class="step slow"><small>Step 2 · 20%</small><b>~38 req/s</b><span>p50 12.5 s · p95 15 s</span></div>
+        <div class="step down"><small>Step 3 · 35%</small><b>~65 req/s</b><span>45% errors · stopped</span></div>
+        <div class="step na"><small>Step 4 · 50%</small><b>not reached</b><span>–</span></div>
+        <div class="step na"><small>Step 5 · 75%</small><b>not reached</b><span>–</span></div>
+        <div class="step na"><small>Step 6 · 100%</small><b>not reached</b><span>–</span></div>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Step</th><th>New visitors/min</th><th>Staying</th><th>Browsing p50</th><th>Browsing p95</th><th>Browsing errors</th><th>Progress p95</th><th>Progress errors</th></tr></thead>
+        <tbody>
+          <tr><td>1 · 10%</td><td class="n">60</td><td class="n">100</td><td class="n">507 ms</td><td class="n good">914 ms</td><td class="n good">0%</td><td class="n warnc">950 ms</td><td class="n good">0%</td></tr>
+          <tr><td>2 · 20%</td><td class="n">120</td><td class="n">200</td><td class="n badc">12.5 s</td><td class="n badc">15.2 s</td><td class="n">0.15%</td><td class="n badc">15.1 s</td><td class="n">0.09%</td></tr>
+          <tr><td>3 · 35%</td><td class="n">210</td><td class="n">350</td><td class="n">289 ms</td><td class="n badc">16.4 s</td><td class="n badc">45.5%</td><td class="n badc">16.4 s</td><td class="n badc">25.9%</td></tr>
+        </tbody>
+      </table></div>
+      <p><b>What breaks first, in order:</b></p>
+      <ol>
+        <li><b>Response time</b> (step 2): every request still succeeds, but waits 12–15 s in a queue. The server is saturated at roughly 25–35 requests per second.</li>
+        <li><b>Fast rejections</b> (step 3): HTTP 503 in about 190 ms, <code>text/plain</code>, from the platform layer (Cloudflare / Laravel Cloud). These responses carry no <code>X-RateLimit</code> header, so the application never saw them: no worker was free to take the request.</li>
+      </ol>
+      <p class="note">Responses by code in this run: 8,085 × 200, 46 × 503, 22 × 422 (the buyer's 10-ticket limit, see above). The progress bar already missed its 0.8 s target at step 1.</p>
+    </article>
+
+    <article class="card">
+      <div class="card-head"><h3>4. Spike and Soak</h3><span class="chip skip">Not run</span></div>
+      <p>The Spike run (5,000 visitors/min, about 750 requests per second) and the Soak run assume the Load run passes. With a breaking point near 30 requests per second they would only repeat the Load result and keep the shared test environment down longer. Run them after the changes below.</p>
+    </article>
+  </section>
+
+  <!-- ===================== WHY ===================== -->
+  <section id="why">
+    <header>
+      <span class="eyebrow">Why</span>
+      <h2>Why each request is so expensive</h2>
+      <p>From reading the backend code (the hosting settings themselves are not in the repository, so some points need confirming in Laravel Cloud). Every public request does a lot of database work that never changes between visitors.</p>
+    </header>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Where</th><th>What happens on every request</th><th>Source</th></tr></thead>
+      <tbody>
+        <tr><td>Before any controller</td><td>About 5 database queries (about 8 on event routes): the tenant is looked up 2–3 times with no caching, the active subscription and the plan are checked, the default language is loaded.</td><td><code>DomainTenantResolver</code> (cache off), <code>PreventAccessToInactiveTenants</code>, <code>EnsurePlanIncludesFundraisingEvents</code>, <code>SetDefaultLanguage:37</code></td></tr>
+        <tr><td>Rate limiter</td><td>Two throttles per request, each several cache operations. If the cache store is the database (the code's default), each one locks a row per IP.</td><td><code>bootstrap/app.php:70</code>, <code>config/cache.php:18</code></td></tr>
+        <tr><td>Connections</td><td>Two new Postgres connections per request (public and central schemas), closed after every request under Octane. No connect or statement timeout, so requests wait until the platform gives up.</td><td><code>config/database.php</code>, <code>config/octane.php</code> (DisconnectFromDatabases)</td></tr>
+        <tr><td>Progress bar</td><td>About 12 queries per call, with no caching, called every 10 s by every open page.</td><td><code>EventProgressSnapshotService</code></td></tr>
+        <tr><td>Event page</td><td>About 22 queries plus a cache lookup per image (8 relations eager-loaded, location lookups, ticket holds aggregate).</td><td><code>ShowPublishedFundraisingEventBySlugController</code></td></tr>
+        <tr><td>Header and footer</td><td>One query per menu item and sub-item for its translated title (N+1).</td><td><code>LocalizableByRelation.php:82-88</code></td></tr>
+        <tr><td>Caching</td><td>None of the endpoints in the test is cached, in the application or at Cloudflare (no cache headers; requests with <code>X-Tenant</code> are forced private).</td><td><code>SetPublicCacheHeaders.php:48</code></td></tr>
+        <tr><td>Indexes</td><td><code>central.subscriptions</code> has no <code>tenant_id</code> index and is filtered by tenant 2–3 times per request; <code>central.domains</code> has none starting with <code>tenant_id</code>.</td><td><code>database/schema/pgsql-schema.sql</code></td></tr>
+      </tbody>
+    </table></div>
+    <p class="note">A page load of the event (9 calls) therefore costs well over 60 database queries, and each open page adds about 12 more every 10 seconds. At 3,000 open pages that is 300 progress calls per second, about 10 times what the server holds today.</p>
+  </section>
+
+  <!-- ===================== RECOMMENDATIONS ===================== -->
+  <section id="recommendations">
+    <header>
+      <span class="eyebrow">Recommendations</span>
+      <h2>What to change before the event day</h2>
+      <p>Ordered by impact. Scaling the servers alone will not close a 10–20× gap affordably: the biggest gain is to stop recomputing the same answers for every visitor.</p>
+    </header>
+    <div class="recs">
+      <div class="rec"><div class="pri p1">Priority 1<small>Server</small></div><div class="body">
+        <h3>Give the API more room and fail fast</h3>
+        <ul>
+          <li>In Laravel Cloud: raise the app compute size and the number of instances, and set autoscaling with a <b>minimum</b> of several instances warm before the event starts (autoscaling reacts in minutes; the spike comes in one).</li>
+          <li>Confirm Octane is on, and size its workers to the instance's CPU.</li>
+          <li>Point <code>DB_HOST</code> at the database's connection pooler (the <code>-pooler</code> endpoint) so hundreds of workers do not open hundreds of Postgres connections each second; scale the database up for the day.</li>
+          <li>Use Redis (Valkey) for the cache and the rate limiter, never the database store.</li>
+          <li>Add connect and statement timeouts (for example 5 s) so a slow query fails fast instead of holding a worker for 20–30 s.</li>
+          <li>Run the event on its own database, not on <code>npos_shared</code> with other environments.</li>
+        </ul>
+      </div></div>
+
+      <div class="rec"><div class="pri p1">Priority 1<small>Application</small></div><div class="body">
+        <h3>Cache what every visitor sees</h3>
+        <ul>
+          <li><b>Layout calls</b> (branding, tenant info, languages, header, footer, social, contact): cache per tenant for 5–10 minutes and clear on save. They change a few times a month and are 7 of the 9 calls of every page load.</li>
+          <li><b>Progress bar</b>: cache the snapshot per event for 5–10 seconds. Better: send <code>Cache-Control: public, s-maxage=5</code> so Cloudflare answers it, with the tenant in the cache key (path or host instead of the <code>X-Tenant</code> header). This turns thousands of requests per minute into a few.</li>
+          <li><b>Event page</b>: cache the published event per slug for 30–60 seconds; keep ticket availability live.</li>
+          <li><b>Middleware</b>: turn on tenant resolver caching (stancl <code>CachedTenantResolver</code>), cache the active-subscription and plan checks per tenant for a minute, and use the cached default language.</li>
+          <li>Fix the header/footer N+1 (eager-load the translations); add the missing <code>tenant_id</code> indexes on <code>central.subscriptions</code> and <code>central.domains</code>.</li>
+        </ul>
+      </div></div>
+
+      <div class="rec"><div class="pri p1">Priority 1<small>Purchases</small></div><div class="body">
+        <h3>Never let a buyer buy twice after an error</h3>
+        <ul>
+          <li>Accept an <code>Idempotency-Key</code> on <code>POST /client/tickets/intent</code> (the offline donation endpoint already has this mechanism) so a retry returns the first purchase instead of creating a second.</li>
+          <li>On the site: after a timeout or 5xx on purchase, check "my tickets" / the intent status before showing an error or allowing a retry; show "We are confirming your order" instead of a failure.</li>
+        </ul>
+      </div></div>
+
+      <div class="rec"><div class="pri p2">Priority 2<small>Verify</small></div><div class="body">
+        <h3>Check whose IP the rate limits count</h3>
+        <p>Reading the code, the throttles appear to run before the app's <code>TrustProxies</code> middleware (Laravel sorts throttles above most middleware). If so, the per-IP limits may count Cloudflare's or the BFF's address instead of the visitor's, and on the event day thousands of real visitors would share one 1,000/min limit. Confirm with <code>gatherRouteMiddleware</code> on a public route; if confirmed, move proxy trust to the global middleware.</p>
+      </div></div>
+
+      <div class="rec"><div class="pri p2">Priority 2<small>Site</small></div><div class="body">
+        <h3>Poll less</h3>
+        <p>The backend already publishes progress updates (<code>EventProgressPublisher</code>). If the event page listens to them, the 10-second polling can become a 30–60 second fallback, which alone cuts the progress traffic by 3–6×.</p>
+      </div></div>
+
+      <div class="rec"><div class="pri p3">Priority 3<small>Next test</small></div><div class="body">
+        <h3>Test again after the changes</h3>
+        <ul>
+          <li>Run the stepped breaking-point test first (about 20 minutes); move to Load only once 100% of the Load mix passes, then Stress and Spike.</li>
+          <li>Provide <code>tokens.txt</code> with the 300 buyers, and raise <code>EVENT_TICKET_MAX_FREE_PER_USER_PER_EVENT</code> (default 10 free tickets per buyer per event) for the test: this run had one buyer, capped at 8 purchases per minute.</li>
+          <li>Above about 1,000 requests per minute, the per-IP limits apply to the test machine: raise them for the test, or run from several machines.</li>
+          <li>The lead should keep the Laravel Cloud graphs (CPU, memory, workers, database connections, queue) for each run window above, to confirm which resource ran out first.</li>
+        </ul>
+      </div></div>
+    </div>
+  </section>
+
+  <section id="cleanup">
+    <header>
+      <span class="eyebrow">After the test</span>
+      <h2>Left to clean up</h2>
+    </header>
+    <ul>
+      <li>The buyer account used for the test holds 10 free tickets for the Load Test Event, and one sign-in token was created for it: delete them with the other test data.</li>
+      <li>The X-BFF-Secret and the buyer account's password were shared during the test: rotate both.</li>
+      <li>The shared test environment was unavailable or very slow from 09:33 to 09:48 UTC and from 09:53 to 09:58 UTC (12:33–12:58 local), and recovered by itself.</li>
+    </ul>
+  </section>
+
+  <footer>
+    <p>Method: k6 scenarios matching sections 5–7 of the plan (layout calls in parallel like a browser, think time 3–10 s, progress every 10 s, purchase then "my tickets" after 1, 2, 3, 5, 5 s). Every run checked that answers came from the loadtest organisation and did not follow redirects. Response times are measured at the client; network time was about 40 ms per request.</p>
+    <p>Limitations: one test machine (its CPU reached 77% during Load, still able to send the load) and one buyer account. The server-side causes come from reading the code; the Laravel Cloud settings (cache store, Octane, workers, pooler) need confirming in the environment.</p>
+  </footer>
+</main>
+
+</body></html>
