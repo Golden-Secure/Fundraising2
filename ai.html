@@ -1,0 +1,971 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>مساعد الصفحات بالذكاء الاصطناعي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Readex+Pro:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one Arabic reading column (RTL); code, prompts and file paths sit in LTR blocks that scroll inside themselves. */
+:root {
+  --paper: #F3F5F7;
+  --surface: #FFFFFF;
+  --ink: #17212B;
+  --muted: #56636F;
+  --line: #DFE4E9;
+  --accent: #0E7C86;
+  --accent-soft: #E1F2F3;
+  --code-bg: #F7F9FA;
+  --good: #1B7F52;
+  --good-soft: #E3F3EA;
+  --warn: #9A5F00;
+  --warn-soft: #FFF2D6;
+  --bad: #B8322A;
+  --bad-soft: #FCE9E7;
+  --font-display: "Readex Pro", "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0F1418; --surface: #172027; --ink: #E5EAEE; --muted: #9AA7B2; --line: #26323B;
+    --accent: #5CC6CF; --accent-soft: #123338; --code-bg: #121A20;
+    --good: #5CC895; --good-soft: #15301F; --warn: #E8B24C; --warn-soft: #33270C; --bad: #F2827A; --bad-soft: #3A1A18;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0F1418; --surface: #172027; --ink: #E5EAEE; --muted: #9AA7B2; --line: #26323B;
+  --accent: #5CC6CF; --accent-soft: #123338; --code-bg: #121A20;
+  --good: #5CC895; --good-soft: #15301F; --warn: #E8B24C; --warn-soft: #33270C; --bad: #F2827A; --bad-soft: #3A1A18;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { direction: rtl; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16.5px;
+  line-height: 1.85;
+  margin: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 40px 80px;
+}
+.wrap { max-width: 1060px; margin: 0 auto; display: grid; gap: 56px; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.35; margin: 0; }
+h1 { font-size: clamp(29px, 4.2vw, 44px); font-weight: 700; }
+h2 { font-size: clamp(23px, 2.8vw, 29px); font-weight: 600; }
+h3 { font-size: 18.5px; font-weight: 600; }
+p { margin: 0; max-width: 780px; }
+ul, ol { margin: 0; padding-inline-start: 20px; display: grid; gap: 6px; }
+a { color: var(--accent); }
+section { display: grid; gap: 20px; }
+code, .ltr { direction: ltr; unicode-bidi: isolate; font-family: var(--font-mono); font-size: 0.84em; }
+code { background: var(--accent-soft); padding: 1px 6px; border-radius: 5px; }
+.eyebrow { font-family: var(--font-display); font-size: 13px; font-weight: 600; letter-spacing: 0.04em; color: var(--accent); }
+.lead { font-size: 19px; color: var(--muted); max-width: 800px; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 14px; color: var(--muted); }
+.meta b { color: var(--ink); font-weight: 600; }
+.note { font-size: 14.5px; color: var(--muted); }
+
+/* Summary cards */
+.summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.sum { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; display: grid; gap: 10px; align-content: start; }
+.sum h3 { font-size: 17px; }
+.sum ul { font-size: 15px; gap: 5px; }
+.big { font-family: var(--font-display); font-size: 28px; font-weight: 700; line-height: 1.2; }
+.big small { font-size: 14.5px; font-weight: 500; color: var(--muted); }
+
+.toc { display: flex; flex-wrap: wrap; gap: 8px; }
+.toc a { text-decoration: none; color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 3px 14px; font-size: 14px; }
+.toc a:hover, .toc a:focus-visible { border-color: var(--accent); color: var(--accent); outline: none; }
+
+/* Tables */
+.tablebox { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+th, td { text-align: start; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-family: var(--font-display); font-weight: 600; font-size: 13.5px; color: var(--muted); background: var(--paper); white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: center; font-variant-numeric: tabular-nums; white-space: nowrap; }
+tfoot td { font-weight: 600; background: var(--paper); }
+td code { white-space: nowrap; }
+
+/* Pipeline steps: the order is the real execution order. */
+.steps { display: grid; gap: 0; counter-reset: step; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.step { display: grid; grid-template-columns: 44px 118px minmax(0, 1fr); gap: 14px; padding: 14px 18px; border-bottom: 1px solid var(--line); align-items: start; }
+.step:last-child { border-bottom: 0; }
+.step .n { counter-increment: step; font-family: var(--font-display); font-weight: 700; font-size: 15px; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); font-variant-numeric: tabular-nums; }
+.step .n::before { content: counter(step); }
+.lane { font-size: 12.5px; font-weight: 600; border-radius: 999px; padding: 2px 10px; justify-self: start; white-space: nowrap; direction: ltr; }
+.l-br { background: #E8EEFC; color: #2F4FB5; }
+.l-nx { background: var(--accent-soft); color: var(--accent); }
+.l-be { background: var(--warn-soft); color: var(--warn); }
+.l-ai { background: #F1E8FB; color: #7440B8; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .l-br { background: #1D2847; color: #9DB4F5; } :root:not([data-theme="light"]) .l-ai { background: #2C1F40; color: #C9A6F2; } }
+:root[data-theme="dark"] .l-br { background: #1D2847; color: #9DB4F5; }
+:root[data-theme="dark"] .l-ai { background: #2C1F40; color: #C9A6F2; }
+.step b { font-weight: 600; }
+.step p { font-size: 15px; color: var(--muted); }
+.step .where { font-size: 12.5px; color: var(--muted); }
+
+/* Prompt anatomy */
+.anatomy { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+.msg { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; display: grid; gap: 10px; align-content: start; }
+.msg h3 { font-size: 16px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.part { border-inline-start: 3px solid var(--accent); padding-inline-start: 12px; display: grid; gap: 2px; }
+.part.opt { border-inline-start-style: dashed; border-color: var(--muted); }
+.part b { font-size: 14.5px; font-weight: 600; }
+.part span { font-size: 13.5px; color: var(--muted); }
+
+pre { margin: 0; direction: ltr; text-align: left; font-family: var(--font-mono); font-size: 12.8px; line-height: 1.6; background: var(--code-bg); color: var(--ink); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; overflow: auto; white-space: pre; tab-size: 2; }
+pre.tall { max-height: 560px; }
+pre.mid { max-height: 380px; }
+.codehead { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: baseline; }
+.codehead span { font-size: 13px; color: var(--muted); }
+.hl { color: var(--bad); font-weight: 500; }
+
+/* Other prompts */
+.prompts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.pc { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 8px; align-content: start; }
+.pc h3 { font-size: 15.5px; }
+.pc p { font-size: 14.5px; color: var(--muted); }
+.pc pre { font-size: 12px; max-height: 220px; }
+
+/* Findings */
+.issues { display: grid; gap: 12px; }
+.issue { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; display: grid; gap: 8px; }
+.issue-head { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.issue-head h3 { font-size: 16.5px; flex: 1 1 320px; }
+.sev { font-size: 12px; font-weight: 700; border-radius: 6px; padding: 0 8px; white-space: nowrap; }
+.s-hi { background: var(--bad-soft); color: var(--bad); }
+.s-md { background: var(--warn-soft); color: var(--warn); }
+.s-lo { background: var(--accent-soft); color: var(--accent); }
+.id { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); }
+.issue dl { margin: 0; display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 4px 12px; font-size: 15px; }
+.issue dt { color: var(--muted); font-size: 14px; }
+.issue dd { margin: 0; }
+.issue .ltr { font-size: 12.5px; }
+
+.pill { display: inline-block; font-size: 12.5px; font-weight: 600; border-radius: 999px; padding: 0 9px; white-space: nowrap; }
+.p-ok { background: var(--good-soft); color: var(--good); }
+.p-no { background: var(--bad-soft); color: var(--bad); }
+.p-part { background: var(--warn-soft); color: var(--warn); }
+
+.groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+.grp { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 6px; align-content: start; }
+.grp h3 { font-size: 14.5px; }
+.grp p { font-size: 12.5px; direction: ltr; text-align: left; font-family: var(--font-mono); color: var(--muted); line-height: 1.7; }
+
+@media (max-width: 860px) {
+  .summary, .anatomy, .prompts { grid-template-columns: minmax(0, 1fr); }
+  .step { grid-template-columns: 36px minmax(0, 1fr); }
+  .step .lane { grid-column: 2; }
+  .step > div { grid-column: 2; }
+  .issue dl { grid-template-columns: minmax(0, 1fr); }
+  .issue dt { margin-top: 4px; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<div class="wrap">
+
+<header style="display:grid;gap:16px">
+  <div class="eyebrow">تقرير فني · منشئ الصفحات (Puck)</div>
+  <h1>مساعد الصفحات بالذكاء الاصطناعي: بيشتغل إزاي، والبرومبت شكله إيه، ومشاكله</h1>
+  <p class="lead">التقرير ده مبني على قراءة الكود نفسه في الريبوهين، مش على وصف أو توثيق. كل نقطة معاها اسم الملف ورقم السطر عشان المطوّر يروح لها على طول. نصوص البرومبتات منقولة من الكود حرفيًا، والبرومبت الرئيسي طلعته بتشغيل الدالة اللي بتبنيه.</p>
+  <div class="meta">
+    <span>الفرونت: <b class="ltr">NPOS-SaaS-Front @ main c220af15</b> (22 أكتوبر 2026)</span>
+    <span>الباك: <b class="ltr">NPOS-SaaS @ staging e0e9844e1</b> (21 أكتوبر 2026)</span>
+    <span>تاريخ التقرير: <b>29 أكتوبر 2026</b></span>
+  </div>
+</header>
+
+<section aria-labelledby="sum-h">
+  <h2 id="sum-h" class="eyebrow" style="font-size:13px">الخلاصة</h2>
+  <div class="summary">
+    <div class="sum">
+      <h3>هو إيه</h3>
+      <ul>
+        <li>شات جوه محرّر الصفحات. الأدمن يكتب طلبه، والـ AI يرجّع الصفحة كقطع (components) تتحط على الكانفاس على طول.</li>
+        <li>معاه أدوات تانية: تعديل سكشن واحد، صفحة من صورة، مراجعة الصفحة، ومُرشد بيقترح أنسب قطعة.</li>
+        <li>الموديل <b class="ltr">Gemini Flash</b>، بنكلّمه بصيغة OpenAI من سيرفر Next.js.</li>
+      </ul>
+    </div>
+    <div class="sum">
+      <h3>شغال إزاي</h3>
+      <ul>
+        <li>الكود كله في الفرونت، في <code>src/app/api/puck/</code>: 11 ملف، حوالي 2,800 سطر.</li>
+        <li>الباك اند (Laravel) دوره الفلوس بس: يسمح بالطلب ويسجّل التوكنز ويطبّق الحد الشهري.</li>
+        <li>البرومبت = تعليمات ثابتة <span class="ltr">~10 KB</span> + كتالوج القطع + الصفحة الحالية + محتوى الجمعية الحقيقي + طلب المستخدم.</li>
+      </ul>
+    </div>
+    <div class="sum">
+      <h3>أهم المشاكل</h3>
+      <div class="big">17 <small>مشكلة: 4 عالية، 8 متوسطة، 5 بسيطة</small></div>
+      <ul>
+        <li>ناتج الموديل بيتحط في الصفحة من غير تحقق، ورد فاضي ممكن يمسح الصفحة.</li>
+        <li>البرومبت بيناقض نفسه، فبيطلّع صفحات HTML خام تقيلة وصعب تتعدل.</li>
+        <li>ثغرات في استيراد صفحة من رابط (SSRF وبروكسي مفتوح).</li>
+        <li>إصلاح الكل: حوالي <b>26 يوم شغل</b>.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<nav class="toc" aria-label="المحتويات">
+  <a href="#features">الأدوات</a>
+  <a href="#flow">مسار الطلب</a>
+  <a href="#files">الملفات</a>
+  <a href="#prompt">البرومبت</a>
+  <a href="#other-prompts">باقي البرومبتات</a>
+  <a href="#config">الإعدادات</a>
+  <a href="#billing">الفوترة</a>
+  <a href="#issues">المشاكل</a>
+  <a href="#plan">خطة الإصلاح</a>
+  <a href="#catalog">كتالوج القطع</a>
+</nav>
+
+<!-- ============ FEATURES ============ -->
+<section id="features" aria-labelledby="features-h">
+  <div class="eyebrow">1</div>
+  <h2 id="features-h">الأدوات اللي المستخدم بيشوفها</h2>
+  <p>كل أداة ليها راوت في Next.js. كلهم بيكلّموا نفس الموديل، وكلهم ماعدا استيراد الرابط بيعدّوا على الفوترة.</p>
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>الأداة</th><th>الراوت</th><th>بتعمل إيه</th><th>الناتج</th><th>بتتحسب؟</th></tr></thead>
+      <tbody>
+        <tr><td>شات البناء (Execution)</td><td><code>/api/puck/openai-compatible</code></td><td>يبني صفحة كاملة، أو يضيف عليها، أو يعدّلها</td><td>JSON بالقطع، ويتطبّق على الكانفاس</td><td><span class="pill p-part">جزئيًا</span></td></tr>
+        <tr><td>شات التخطيط (Discussion)</td><td>نفس الراوت</td><td>يسأل أسئلة توضيحية، ويكتب ملخص للمشروع (brief) يتحفظ في الصفحة</td><td>نص، والـ brief في <code>root.props._brief</code></td><td><span class="pill p-ok">أيوه</span></td></tr>
+        <tr><td>تعديل سكشن واحد</td><td>نفس الراوت (وضع modify وفي سكشن متحدد)</td><td>يبعت السكشن المتحدد بس ويرجّعه متعدل</td><td>JSON لسكشن واحد</td><td><span class="pill p-ok">أيوه</span></td></tr>
+        <tr><td>AI صفحات القوائم والتفاصيل</td><td><code>/api/puck/list-page?page=…</code></td><td>يرتّب بلوكات صفحات البرامج والفعاليات والمقالات</td><td>JSON بيتحقق منه بالـ schema</td><td><span class="pill p-ok">أيوه</span></td></tr>
+        <tr><td>سكشن من صورة</td><td><code>/api/puck/section-from-image</code></td><td>صورة سكشن تتحول لـ HTML</td><td>HTML لقطة CustomSection</td><td><span class="pill p-ok">أيوه</span></td></tr>
+        <tr><td>صفحة من صورة</td><td><code>/api/puck/sections-from-image</code></td><td>صورة صفحة كاملة تتقسم سكاشن HTML</td><td>كذا HTML مفصولين بعلامة</td><td><span class="pill p-ok">أيوه</span></td></tr>
+        <tr><td>صفحة من رابط</td><td><code>/api/puck/fetch-url</code></td><td>يجيب HTML أي صفحة عامة (من غير AI)</td><td>HTML يتقسم في المتصفح</td><td><span class="pill p-no">مفيش AI</span></td></tr>
+        <tr><td>مراجعة الصفحة</td><td><code>/api/puck/critique</code></td><td>من 3 لـ 7 ملاحظات تصميم مرتبة بالأهمية</td><td>JSON ملاحظات، ومش بيعدّل حاجة</td><td><span class="pill p-ok">أيوه</span></td></tr>
+        <tr><td>مُرشد القطع</td><td><code>/api/puck/component-advisor</code></td><td>يقترح أنسب قطعة وإعداداتها</td><td>Markdown</td><td><span class="pill p-ok">أيوه</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">«جزئيًا» في شات البناء معناها إن نداء اختيار القطع (shortlist) ومحاولة أولى بتتقطع مابيتحسبوش. التفاصيل في المشكلة <span class="ltr">P9</span>.</p>
+</section>
+
+<!-- ============ FLOW ============ -->
+<section id="flow" aria-labelledby="flow-h">
+  <div class="eyebrow">2</div>
+  <h2 id="flow-h">مسار طلب «اعمل لي صفحة»، خطوة بخطوة</h2>
+  <p>ده الترتيب الفعلي اللي الكود بيمشي بيه في <code>runPuckGeneration</code>. اللون بيوضح الخطوة بتتنفذ فين.</p>
+  <div class="steps">
+    <div class="step"><span class="n"></span><span class="lane l-br">Browser</span><div><b>المحرّر بيبعت الطلب.</b> <p>إضافة <code>@puckeditor/plugin-ai</code> بتبعت <code>{messages, pageData, config}</code>: المحادثة والصفحة الحالية وكونفيج كل القطع. الاختيارات (التفكير والنطاق والستايل والوضع) بتتبعت في كوكي <code>builder_ai_prefs_v2</code>، والسكشن المتحدد في <code>builder_ai_section</code>. الكوكيز مستخدمة عشان لو اتغيّر عنوان الإضافة، Puck بيعيد بناء الـ iframe.</p><span class="where ltr">Builder.jsx:61-73, 192 · lib/ai-prefs.js</span></div></div>
+    <div class="step"><span class="n"></span><span class="lane l-be">Laravel</span><div><b>إذن الفوترة.</b> <p>‏<code>POST /api/v1/ai/admin/usage/authorize</code> بتوكن الأدمن و X-Tenant و BFF secret. الرد 403 لو الموديول مش في الباقة، أو 402 لو الرصيد الشهري خلص. لو نجح بيرجّع <code>event_id</code> بحالة pending. ولو الباك ماردّش خلال 15 ثانية، الطلب بيترفض.</p><span class="where ltr">ai-billing.ts:43 · AuthorizeAiUsageController · AiCreditService</span></div></div>
+    <div class="step"><span class="n"></span><span class="lane l-nx">Next.js</span><div><b>لو الوضع Discussion، بيرجع من هنا.</b> <p>نداءين في نفس الوقت: رد استشاري بأسئلة (<code>CONSULTANT_SYSTEM_PROMPT</code>)، وتحديث الـ brief (<code>BRIEF_SUMMARY_SYSTEM</code>). الـ brief بيتكتب على <code>root.props._brief</code> من غير ما يدخل في الـ undo. مفيش ولا قطعة بتتبني.</p><span class="where ltr">generation.ts:207-304, 366</span></div></div>
+    <div class="step"><span class="n"></span><span class="lane l-nx">Next.js</span><div><b>تحديد نطاق الشغل.</b> <p>لو الوضع modify وفي سكشن متحدد، بيتبعت السكشن ده بس. غير كده الصفحة كلها بتتبعت بكل خصائصها، لحد 400 ألف حرف. لو أكبر، بيتبعت أسماء القطع بس، مع تحذير للموديل. وفي وضع fresh الكانفاس بيتبعت فاضي.</p><span class="where ltr">generation.ts:383-399</span></div></div>
+    <div class="step"><span class="n"></span><span class="lane l-be">Laravel</span><div><b>جلب محتوى الجمعية الحقيقي.</b> <p>5 طلبات عامة: البانر والبرامج والفعاليات والإحصائيات والمقالات. بيتلخصوا في JSON لحد 20 ألف حرف، عشان الموديل يستخدم الصور والأسماء والأرقام الحقيقية بدل ما يألّف.</p><span class="where ltr">generation.ts:88-155, 405</span></div></div>
+    <div class="step"><span class="n"></span><span class="lane l-nx">Next.js</span><div><b>تركيب التعليمات.</b> <p>بيتضاف على شكل الرد بالترتيب ده: الـ brief، ومحتوى الجمعية، وتحذير «الصفحة كبيرة»، والنطاق، والستايل، والسكاشن المقفولة.</p><span class="where ltr">generation.ts:408-453</span></div></div>
+    <div class="step"><span class="n"></span><span class="lane l-ai">Gemini</span><div><b>نداء اختيار القطع (shortlist).</b> <p>عندنا 91 قطعة، وده أكتر من الحد (45). فبيروح نداء صغير ياخد الكتالوج والطلب ويختار من 12 لـ 24 قطعة. بعدها بيتبعت كونفيج كامل للقطع دي، وللـ 30 قطعة الأساسية، وللقطع اللي على الكانفاس. ولو النداء فشل، بيتبعت الكونفيج كله.</p><span class="where ltr">generation.ts:455-492 · openai-compatible/route.ts:67-84</span></div></div>
+    <div class="step"><span class="n"></span><span class="lane l-ai">Gemini</span><div><b>النداء الرئيسي.</b> <p>رسالة system فيها <code>PUCK_SYSTEM_PROMPT</code>، ورسالة user فيها الكونفيج والكانفاس والطلب والتعليمات. الرد مطلوب JSON (<code>response_format: json_object</code>). الحد الأقصى 64 ألف توكن للصفحة و 24 ألف للسكشن. ولو الرد اتقطع بسبب الطول، بيتعاد مرة بتفكير low.</p><span class="where ltr">openai-compatible/route.ts:85-138</span></div></div>
+    <div class="step"><span class="n"></span><span class="lane l-nx">Next.js</span><div><b>قراءة الرد وبناء الشجرة.</b> <p><code>parseModelJson</code> بيصلّح الأسطر الجديدة الخام جوه النصوص. بعدها <code>buildTree</code> بيحوّل القائمة المسطحة (parentId و slotName) لشجرة. <code>wireDynamicForms</code> بيدّي الفورمز <code>formId</code> وأسماء حقول وقواعد. و <code>sanitizeDataSources</code> بيشيل مصادر البيانات اللي مش متسجلة.</p><span class="where ltr">model-client.ts:18 · puck-ai-helpers.ts:559-641</span></div></div>
+    <div class="step"><span class="n"></span><span class="lane l-nx">Next.js</span><div><b>دمج الناتج مع الصفحة.</b> <p>اختيار المستخدم أقوى من اختيار الموديل: append يبقى add، وwhole أو modify أو fresh يبقوا replace_all، وauto ياخد اللي الموديل اختاره. السكاشن المقفولة (<code>_locked</code>) بترجع مكانها، وأي نسخة الموديل كررها منها بتتشال. ولو سكشن واحد، بيتبدل بنفس الـ id.</p><span class="where ltr">generation.ts:545-620</span></div></div>
+    <div class="step"><span class="n"></span><span class="lane l-be">Laravel</span><div><b>تسجيل الاستهلاك.</b> <p>‏<code>POST usage/{event}/report</code> بالتوكنز والموديل والحالة، ومعاهم meta فيها النطاق والستايل وحجم الكانفاس والمدة. الباك بيحسب التكلفة من جدول الأسعار.</p><span class="where ltr">generation.ts:635 · ReportAiUsageController</span></div></div>
+    <div class="step"><span class="n"></span><span class="lane l-br">Browser</span><div><b>الصفحة تتحدث.</b> <p>الستريم بيبعت جملة شرح، وبعدها <code>setData</code> بالصفحة الجديدة مع <code>recordHistory: true</code>، يعني الـ undo شغال. وأثناء الانتظار بيظهر «Generating layout» ومعاها نقطة كل 3 ثواني، عشان بروكسي Netlify مايقفلش الاتصال.</p><span class="where ltr">generation.ts:526-537, 645-659</span></div></div>
+  </div>
+</section>
+
+<!-- ============ FILES ============ -->
+<section id="files" aria-labelledby="files-h">
+  <div class="eyebrow">3</div>
+  <h2 id="files-h">الملفات ودور كل واحد</h2>
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>الملف</th><th class="num">سطور</th><th>الدور</th></tr></thead>
+      <tbody>
+        <tr><td colspan="3"><b>الفرونت</b> <span class="note">(NPOS-SaaS-Front)</span></td></tr>
+        <tr><td><code>src/app/api/puck/_shared/generation.ts</code></td><td class="num">704</td><td>هيكل التوليد كله: الإذن، والـ Discussion، وتركيب التعليمات، والـ shortlist، والدمج، والسكاشن المقفولة، والتقرير، والستريم.</td></tr>
+        <tr><td><code>src/app/api/puck/_shared/puck-ai-helpers.ts</code></td><td class="num">980</td><td>كل البرومبتات، ووصف الـ 91 قطعة، والكتالوج، وتصغير الكونفيج، وبناء الشجرة، وتجهيز الفورمز.</td></tr>
+        <tr><td><code>src/app/api/puck/_shared/model-client.ts</code></td><td class="num">101</td><td>عميل OpenAI على endpoint جوجل، وإعادة المحاولة (3 مرات بعد 2 و 4 ثواني)، وإصلاح الـ JSON.</td></tr>
+        <tr><td><code>src/app/api/puck/_shared/ai-billing.ts</code></td><td class="num">104</td><td>الإذن والتقرير مع الباك اند، بتوكن الأدمن و BFF secret.</td></tr>
+        <tr><td><code>src/app/api/puck/openai-compatible/route.ts</code></td><td class="num">140</td><td>راوت البناء: شكل الرد JSON، ونداءات chat و shortlist و model.</td></tr>
+        <tr><td><code>src/app/api/puck/list-page/route.ts</code></td><td class="num">123</td><td>AI صفحات القوائم والتفاصيل، ودايمًا replace_all مع تحقق.</td></tr>
+        <tr><td><code>src/utils/builder/list-page-ai.js</code></td><td class="num">347</td><td>برومبت صفحات القوائم، وفلترة CustomSection، والتحقق النهائي.</td></tr>
+        <tr><td><code>src/app/api/puck/section(s)-from-image/route.ts</code></td><td class="num">149 + 157</td><td>من صورة لـ HTML، والرد HTML خام مش JSON.</td></tr>
+        <tr><td><code>src/app/api/puck/critique/route.ts</code></td><td class="num">118</td><td>مراجعة الصفحة.</td></tr>
+        <tr><td><code>src/app/api/puck/component-advisor/route.ts</code></td><td class="num">86</td><td>مُرشد القطع.</td></tr>
+        <tr><td><code>src/app/api/puck/fetch-url/route.ts</code> + <code>lib/url-safety.js</code></td><td class="num">127</td><td>جلب صفحة من رابط مع حماية SSRF، ولو الصفحة SPA بيرندرها في الباك.</td></tr>
+        <tr><td><code>src/components/shared/builder/Builder.jsx</code></td><td class="num">407</td><td>تركيب الإضافة، وقوائم الاختيارات، وعدّاد الرصيد، وطبقة التحميل (patch على window.fetch).</td></tr>
+        <tr><td><code>src/lib/ai-prefs.js</code></td><td class="num">—</td><td>الكوكيز والقيم الافتراضية (الوضع الافتراضي discussion).</td></tr>
+        <tr><td><code>src/hooks/admin/use-ai-availability.js</code> · <code>use-puck-ai-requests.js</code></td><td class="num">77 + 76</td><td>هل الـ AI في الباقة؟ (كاش في sessionStorage، ومهلة 5 ثواني)، ومتابعة الطلبات.</td></tr>
+        <tr><td><code>…/rich/conversion/CustomSection.jsx</code></td><td class="num">—</td><td>عرض الـ HTML اللي الـ AI بيكتبه في iframe sandbox، مع Tailwind من CDN وألوان الجمعية.</td></tr>
+        <tr><td colspan="3"><b>الباك اند</b> <span class="note">(NPOS-SaaS)</span></td></tr>
+        <tr><td><code>routes/api/v1/ai.php</code></td><td class="num">—</td><td>5 راوتات: credits و usage/recent (صلاحية view)، و authorize و report و render-url (صلاحية update على HomePageSection).</td></tr>
+        <tr><td><code>app/Modules/AI/Services/AiCreditService.php</code></td><td class="num">—</td><td>حساب الرصيد والهامش والتكلفة.</td></tr>
+        <tr><td><code>config/ai-providers.php</code></td><td class="num">—</td><td>الحد الشهري 40$، والهامش ×10، وأسعار الموديلات.</td></tr>
+        <tr><td><code>app/Modules/AI/Services/UrlRenderService.php</code></td><td class="num">—</td><td>رندر الصفحات بـ headless Chrome (browserless أو Browsershot).</td></tr>
+        <tr><td><code>ai_usage_events</code> (جدول)</td><td class="num">—</td><td>سجل كل نداء: التوكنز والتكلفة والحالة و meta.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============ PROMPT ============ -->
+<section id="prompt" aria-labelledby="prompt-h">
+  <div class="eyebrow">4</div>
+  <h2 id="prompt-h">البرومبت شكله إيه</h2>
+  <p>النداء الرئيسي فيه رسالتين. الـ system ثابتة لكل الجمعيات. الـ user بتتبني في كل طلب، وأجزاؤها اللي بخط متقطع بتتضاف بس لو الشرط بتاعها متحقق.</p>
+
+  <div class="anatomy">
+    <div class="msg">
+      <h3><span class="lane l-ai">system</span> ثابتة، حوالي 10,200 حرف (≈ 2,600 توكن)</h3>
+      <div class="part"><b>الدور</b><span>«You are an expert UI designer for the Puck Visual Editor»</span></div>
+      <div class="part"><b>NESTING RULE</b><span>إزاي يحط قطعة جوه قطعة: قائمة مسطحة فيها parentId و slotName، ومعاها مثال</span></div>
+      <div class="part"><b>TRANSACTIONAL INTEGRITY</b><span>التبرع والتذاكر من المسارات الحقيقية بس، والفورم للتواصل بس، والروابط المسموح بيها</span></div>
+      <div class="part"><b>COMPONENT CHOICE</b><span>استخدم القطعة المخصوصة للنمط، و CustomSection آخر حل</span></div>
+      <div class="part"><b>OTHER RULES 1-8</b><span>الأنواع، والـ ids، و add أو replace_all، وصفحة كاملة 8-15 قطعة، والحفاظ على الموجود، و<span class="hl">«USE CustomSection FREELY AND OFTEN»</span>، و«AIM HIGH»</span></div>
+      <div class="part"><b>DATA SOURCES</b><span>19 مصدر بيانات متسجل بحقولها وباراميتراتها، وبتتولد من الـ registry</span></div>
+    </div>
+    <div class="msg">
+      <h3><span class="lane l-nx">user</span> بتتبني في كل طلب</h3>
+      <div class="part"><b>Available components config</b><span>كونفيج القطع المختارة: الوصف والحقول والاختيارات، وJSON بمسافات (indent 2)</span></div>
+      <div class="part"><b>Current canvas</b><span>الصفحة الحالية بكل خصائصها، لحد 400 ألف حرف</span></div>
+      <div class="part"><b>User request</b><span>آخر رسالة بس من الشات</span></div>
+      <div class="part"><b>شكل الرد</b><span>JSON_RESPONSE_INSTRUCTIONS</span></div>
+      <div class="part opt"><b>PROJECT BRIEF</b><span>لو في brief اتعمل في الـ Discussion</span></div>
+      <div class="part opt"><b>REAL SITE CONTENT</b><span>لو الـ API رجّع محتوى</span></div>
+      <div class="part opt"><b>NOTE: page too large</b><span>لو الكانفاس أكبر من الحد</span></div>
+      <div class="part opt"><b>USER-SELECTED SCOPE</b><span>لو النطاق مش auto</span></div>
+      <div class="part opt"><b>USER-SELECTED STYLE</b><span>لو الستايل مش auto</span></div>
+      <div class="part opt"><b>LOCKED SECTIONS</b><span>لو في سكاشن مقفولة</span></div>
+    </div>
+  </div>
+
+  <div class="codehead"><h3>رسالة الـ system بالكامل</h3><span>مطلّعة بتشغيل <span class="ltr">PUCK_SYSTEM_PROMPT</span> · puck-ai-helpers.ts:643</span></div>
+  <pre class="tall">You are an expert UI designer for the Puck Visual Editor.
+Your job: decide which components to add to (or replace) a page based on the user's request.
+
+━━━ NESTING RULE ━━━
+Many components have a "content" slot (Card, Section, VLayout, HLayout, GridLayout, Form, BackgroundImage).
+To place components INSIDE a container, output a FLAT list where children reference their parent:
+  • Set "parentId" to the parent component's id
+  • Set "slotName" to the slot field name (usually "content")
+  • Root-level components get parentId: "" and slotName: ""
+
+Example — Card containing Image + Text + Button:
+[
+  { "id": "card_a1", "type": "Card",   "parentId": "",       "slotName": "",        "props": { "id": "card_a1" } },
+  { "id": "img_b2",  "type": "Image",  "parentId": "card_a1","slotName": "content", "props": { "id": "img_b2", "src": "https://placehold.co/400x200", "alt": "Placeholder" } },
+  { "id": "txt_c3",  "type": "Text",   "parentId": "card_a1","slotName": "content", "props": { "id": "txt_c3", "text": "Card description" } },
+  { "id": "btn_d4",  "type": "Button", "parentId": "card_a1","slotName": "content", "props": { "id": "btn_d4", "label": "Learn more" } }
+]
+
+━━━ TRANSACTIONAL INTEGRITY (MONEY &amp; TICKETS) ━━━
+Real donations, payments and ticket bookings happen ONLY through the
+platform's connected flows. NEVER fake them:
+• To let visitors DONATE: link buttons/CTAs to "/programs" (all causes) or
+  use the HomePrograms component (real, donatable program cards). Never
+  invent a donation form.
+• To let visitors BOOK EVENT TICKETS: use HomeEvents / HomeUpcomingEvents
+  (real bookable events) or link to "/fundraising-event".
+• Form components are for contact/inquiry/volunteer forms ONLY. NEVER build
+  a payment, card-details or checkout form from Form fields.
+• Build forms ONLY with Form + FormTextField/FormTextarea/FormSelect/FormCheckbox/
+  FormRadioGroup/FormPhoneField (these save to the platform's dynamic forms).
+  Never hand-code &lt;form&gt; HTML in CustomSection. Give every field a snake_case
+  "name" and "rules" as an array of Laravel rules, e.g. ["required","email"].
+• FundraisingProgress is CONNECTED only when its "dataSource" names a
+  registered source (see DATA SOURCES below); with dataSource null it is
+  DECORATIVE — never present typed amounts as live totals. AnimatedCounters
+  and similar display blocks are always decorative storytelling numbers.
+• Never point a donate/book button at "#" or a made-up path. Valid internal
+  destinations: /programs, /program/{id}, /fundraising-event, /about,
+  /contact-us, /blog, /faq.
+
+━━━ COMPONENT CHOICE ━━━
+When the user names a specific UI pattern — flip cards, timeline, accordion/FAQ,
+before/after slider, image gallery/carousel, video gallery/library, pricing
+table, counters, tabs, logo marquee, countdown, etc. — use the matching
+PURPOSE-BUILT component (FlipCards, Timeline, FaqAccordion, BeforeAfter,
+ImageGallery, VideoGallery, PricingTable, AnimatedCounters, ContentTabs,
+LogoStrip, Countdown, …) rather than a generic
+Card/Cards or a hand-built CustomSection. Match the user's words against each
+component's description (including its "aka:" synonyms). Only fall back to
+CustomSection when no purpose-built component fits the request.
+
+━━━ OTHER RULES ━━━
+1. Only use component types from the available components config.
+2. Every component MUST have a unique string "id" in its props AND as the top-level "id" field.
+3. Populate "props" with realistic values matching the component's fields.
+4. Choose "operation":
+   • "add"         → append your components after the existing ones
+   • "replace_all" → discard all existing components and start fresh
+5. Scope: when the user asks to create or build a page, deliver the COMPLETE
+   page in this single response — typically 8-15 components spanning a hero,
+   varied content sections and a closing call-to-action — and choose
+   "replace_all". Choose "add" only when the user asks to extend or tweak
+   what is already on the canvas. Never deliver a fragment of a page.
+6. Existing content: the current canvas is provided WITH its real props.
+   When the request refers to what is already there (change, improve,
+   reword, restyle, translate, remove...), return the FULL updated page via
+   "replace_all", keeping every component and prop the user did not ask to
+   change. Do not discard existing content unless the user clearly wants a
+   new page.
+7. Custom designs — USE CustomSection FREELY AND OFTEN: you may emit as many
+   CustomSection blocks as you want, as often as you want, and a page may be
+   built entirely from them. Reach for CustomSection whenever a purpose-built
+   block cannot deliver the exact layout, and use it to make every page feel
+   distinct — never reuse the same one or two layouts across pages. Put a
+   bespoke, self-contained section in its "html" prop. It renders in a
+   sandboxed iframe with Tailwind preloaded, so FULL HTML + CSS + JavaScript
+   is supported and executed — write complete markup including &lt;script&gt; and
+   &lt;style&gt; as needed.
+
+8. AIM HIGH — produce an INTERACTIVE, professional, genuinely amazing-looking
+   website, on par with an award-winning agency build:
+   • Rich visual design: bold hero compositions, layered/gradient backgrounds,
+     asymmetric and overlapping layouts, generous whitespace, strong type
+     scale and hierarchy, rounded corners and tasteful shadows.
+   • Real interactivity — add whatever the section needs with vanilla
+     JavaScript inside &lt;script&gt;: sliders/carousels, tabs, accordions,
+     animated counters, countdowns, parallax, scroll-reveal, image galleries
+     with lightboxes, filters, hover/drag effects. Prefer dependency-free JS;
+     if a library helps, load it from a CDN via &lt;script src&gt;. Also use CSS
+     transitions/animations. The section is isolated, so its JS cannot touch
+     the rest of the page — keep everything it needs inside the one html prop.
+   • Fully responsive with Tailwind breakpoints (sm/md/lg), and mobile-first.
+   • Cohesive palette built around the BRAND COLOR: inside a CustomSection the
+     tenant theme is preloaded — use the "primary" Tailwind color
+     (text-primary, bg-primary, border-primary, from-primary, and the tints
+     primary-50/100/200) or var(--color-primary); the brand font is already
+     applied. Build every section around this one brand color plus neutrals —
+     do NOT invent unrelated random colors. Vary section backgrounds (white,
+     neutral, primary-50 tint, an occasional bold primary or dark band) so the
+     page has rhythm, not a wall of white and not a clash of hues.
+   • Use the real site images/names/numbers provided; never leave lorem-ipsum
+     or placeholder greys where real content exists.
+   Money/ticket buttons must link to /programs, /program/{id} or
+   /fundraising-event (use target="_top" so navigation escapes the iframe) —
+   never a made-up payment form.
+
+━━━ DATA SOURCES (the "dataSource" prop of data-bound blocks) ━━━
+"dataSource" is {"id":"&lt;one of the ids below&gt;","params":{...}} or null for typed numbers.
+Use ONLY these registered ids — never invent an id, a param or a URL:
+• program-donation-summary — fields: raised, goal, currency, donors, showProgress, asOf. params: programId (id, required): on a program_details page use "{{route.id}}"; on a campaign page use "{{record.programId}}"; elsewhere a real id
+• event-donation-summary — fields: raised, goal, currency, donors, showProgress, shareCount, tickets, ticketsSoldTotal, asOf. params: eventId (id, required): on a fundraising_event_details page use "{{record.id}}"; elsewhere a real id
+• campaign-donation-summary — fields: raised, goal, currency, donors, showProgress, status. params: slug (slug, required): on a campaign page use "{{route.slug}}"; nowhere else
+• home-banner — fields: items. params: 
+• programs-list — fields: items, groups. params: page (int): elsewhere a real id | per_page (int): elsewhere a real id | sort (string): elsewhere a real id | search (string): elsewhere a real id | category_ids (array): elsewhere a real id | language_ids (array): elsewhere a real id | from_date (string): elsewhere a real id | to_date (string): elsewhere a real id
+• events-home-section — fields: items. params: 
+• posts-home — fields: items. params: 
+• site-statistics — fields: items. params: 
+• cta-banner — fields: title, description, buttonText, url, image. params: 
+• events-list — fields: items, groups. params: page (int): elsewhere a real id | per_page (int): elsewhere a real id | sort (string): elsewhere a real id | search (string): elsewhere a real id | date_from (string): elsewhere a real id | date_to (string): elsewhere a real id | registration_type (array): elsewhere a real id | categories (array): elsewhere a real id | language_ids (array): elsewhere a real id | countries (array): elsewhere a real id | cities (array): elsewhere a real id
+• posts-list — fields: items, groups. params: page (int): elsewhere a real id | per_page (int): elsewhere a real id | sort (string): elsewhere a real id | search (string): elsewhere a real id | category_ids (array): elsewhere a real id | language_ids (array): elsewhere a real id | from_date (string): elsewhere a real id | to_date (string): elsewhere a real id
+• categories-tree — fields: items. params: module (enum, required): elsewhere a real id
+• content-languages — fields: items. params: 
+• geo-countries — fields: items. params: 
+• geo-cities — fields: items. params: countryId (id, required): elsewhere a real id
+• program-details — fields: id, slug, name, description, bannerUrl. params: id (id, required): on a program_details page use "{{route.id}}"; elsewhere a real id
+• event-details — fields: id, slug, title, registrationType, startAtUtc. params: ref (slug, required): on a fundraising_event_details page use "{{route.slug}}"; elsewhere a real id
+• post-details — fields: id, slug, title, likesCount, sharesCount, isLiked. params: id (id, required): on a blog_post_details page use "{{route.id}}"; elsewhere a real id
+• related-posts — fields: items. params: id (id, required): on a blog_post_details page use "{{route.id}}"; elsewhere a real id
+Tokens the page fills in: {{route.&lt;param&gt;}}, {{query.&lt;name&gt;}}, {{page.type}}, {{record.&lt;field&gt;}}.</pre>
+
+  <div class="codehead"><h3>رسالة الـ user (القالب)</h3><span class="ltr">buildUserMessage · puck-ai-helpers.ts:963 + generation.ts:408-453</span></div>
+  <pre class="tall">Available components config:
+{
+  "components": {
+    "Heading": {
+      "description": "A section heading / page title (H1–H4). aka: title, headline, header.",
+      "fields": {
+        "text":  { "type": "text" },
+        "level": { "type": "select", "options": ["h1", "h2", "h3", "h4"] },
+        ...
+      }
+    },
+    "CustomSection": { "description": "FREEFORM custom-HTML block ...", "fields": { "html": { "type": "text", "hint": "string" }, ... } },
+    "HomePrograms":  { ... },
+    ...   ← 30 core + what the shortlist picked + what is on the canvas
+  }
+}
+
+Current canvas (3 components already present):
+[{"type":"CtaHero","props":{"id":"hero_1","headline":"...","slides":[...]}}, ...]
+
+User request: "&lt;آخر رسالة كتبها الأدمن&gt;"
+
+Respond with ONLY a JSON object in this exact shape (no markdown, no explanation outside the JSON):
+{
+  "operation": "add" | "replace_all",
+  "root": { "props": { "backgroundColor": "", "textColor": "", "accentColor": "" } },
+  "components": [
+    { "id": "...", "type": "...", "parentId": "", "slotName": "", "props": { "id": "..." } }
+  ],
+  "explanationMessage": "short sentence"
+}
+"root" is OPTIONAL page-level theme applied once to the whole page — set it
+only when building a full page (operation "replace_all"); leave a field ""
+to inherit. accentColor overrides the brand color for the entire page and all
+"primary" utilities, so set accentColor only if the user asks for a specific
+colour scheme; otherwise leave it "" to keep the tenant brand.
+
+━━━ PROJECT BRIEF (agreed in the discussion) ━━━            ← only if a brief exists
+Goal: ...
+Primary action: ...
+Honor this brief in everything you build — its goal, sections, tone and
+must-haves take priority over generic defaults.
+
+━━━ REAL SITE CONTENT (tenant database) ━━━                 ← only if the API returned content
+This organization's actual content — programs, events, statistics,
+banner, posts — with their real image URLs:
+{"hero_banner":{"image":"https://...","link":"..."},"programs":[{"name":"...","description":"...","image":"...","url":"/program/12"}],
+ "events":[...],"statistics":[{"number":"1200","label":"..."}],"blog_posts":[...]}
+ALWAYS use these real images, names, numbers and texts when the
+page relates to this organization or the user asks to reuse current
+content — never invent stock replacements for them. Home* components
+render this content automatically from the database.
+
+NOTE: the current page was too large to include with full props — ...   ← only if canvas &gt; 400k chars
+
+━━━ USER-SELECTED SCOPE ━━━                                 ← whole | append | modify | fresh
+The user selected WHOLE PAGE: build the complete page for this request
+(typically 8-15 components spanning a hero, varied content sections and
+a closing call-to-action) and use operation "replace_all".
+
+━━━ USER-SELECTED STYLE ━━━                                 ← minimal | bold | warm | corporate
+STYLE — WARM: soft tinted section backgrounds (very light warm tones such as
+"#fdf6ef" or "#fef9f4") alternating with white, paddingY "normal", emphasize
+human elements — Testimonials, QuoteBanner, photos of people — and friendly
+conversational copy; curved SectionDividers fit this style.
+
+━━━ LOCKED SECTIONS ━━━                                     ← only if sections are locked
+The user locked these existing sections and they will be KEPT exactly as-is:
+CtaHero, HomePrograms. Do NOT recreate or duplicate them. Design the rest of
+the page to complement them.</pre>
+
+  <div class="codehead"><h3>رد الموديل المتوقع، وإزاي بيتحول</h3><span>مثال توضيحي</span></div>
+  <pre class="mid">{
+  "operation": "replace_all",
+  "root": { "props": { "backgroundColor": "", "textColor": "", "accentColor": "" } },
+  "components": [
+    { "id": "hero_1",  "type": "CtaHero",       "parentId": "",       "slotName": "",        "props": { "id": "hero_1", "headline": "..." } },
+    { "id": "sec_2",   "type": "Section",       "parentId": "",       "slotName": "",        "props": { "id": "sec_2" } },
+    { "id": "h_3",     "type": "Heading",       "parentId": "sec_2",  "slotName": "content", "props": { "id": "h_3", "text": "Our programs" } },
+    { "id": "prg_4",   "type": "HomePrograms",  "parentId": "sec_2",  "slotName": "content", "props": { "id": "prg_4" } },
+    { "id": "cs_5",    "type": "CustomSection", "parentId": "",       "slotName": "",        "props": { "id": "cs_5", "html": "&lt;section class=\"bg-primary-50 ...\"&gt;...&lt;script&gt;...&lt;/script&gt;&lt;/section&gt;" } }
+  ],
+  "explanationMessage": "Built a full landing page with ..."
+}
+
+        ↓ buildTree (flat → tree) + wireDynamicForms + sanitizeDataSources
+
+{ "content": [
+    { "type": "CtaHero", "props": { "id": "hero_1", ... } },
+    { "type": "Section", "props": { "id": "sec_2", "content": [ { "type": "Heading", ... }, { "type": "HomePrograms", ... } ] } },
+    { "type": "CustomSection", "props": { "id": "cs_5", "html": "..." } }
+  ],
+  "root": { "props": { ... } } }</pre>
+
+  <h3>نصوص النطاق والستايل كاملة</h3>
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>الاختيار</th><th>النص اللي بيتضاف للبرومبت (ملخص أمين)</th></tr></thead>
+      <tbody>
+        <tr><td><code>whole</code></td><td>ابني الصفحة كاملة (8-15 قطعة: hero وسكاشن متنوعة و CTA في الآخر) واستخدم replace_all.</td></tr>
+        <tr><td><code>append</code></td><td>ضيف قطع جديدة بعد الموجود بس، بـ add، ومتعيدش بناء الموجود.</td></tr>
+        <tr><td><code>modify</code></td><td>عدّل المطلوب ورجّع الصفحة كاملة، بنفس الـ ids والخصائص لأي حاجة متطلبتش تتغير.</td></tr>
+        <tr><td><code>fresh</code></td><td>تجاهل الكانفاس وابني من الصفر.</td></tr>
+        <tr><td><code>minimal</code></td><td>مسافات واسعة، وخلفيات بيضا، وقطع قليلة، ونص قصير، ومن غير SectionDivider.</td></tr>
+        <tr><td><code>bold</code></td><td>سكشن آه وسكشن لأ بخلفية قوية ونص أبيض، و SectionDivider بين الأشرطة، و CtaHero بكذا شريحة، و AnimatedCounters.</td></tr>
+        <tr><td><code>warm</code></td><td>خلفيات دافية فاتحة، وتركيز على الناس (Testimonials و QuoteBanner)، ونص ودود.</td></tr>
+        <tr><td><code>corporate</code></td><td>كثيف ومنظم، وشريط أو اتنين غامقين، و FeatureGrid و TrustBadges و PricingTable، ومن غير فواصل لعوبة.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============ OTHER PROMPTS ============ -->
+<section id="other-prompts" aria-labelledby="op-h">
+  <div class="eyebrow">5</div>
+  <h2 id="op-h">باقي البرومبتات</h2>
+  <div class="prompts">
+    <div class="pc">
+      <h3>اختيار القطع (shortlist)</h3>
+      <p>‏<span class="ltr">buildShortlistPrompt · helpers:444</span>. حوالي 16 ألف حرف، لأن الكتالوج وحده 15 ألف. التفكير low، والمهلة 20 ثانية.</p>
+      <pre>You select building blocks for a page-builder request. ...
+Pick the 12-24 component NAMES most useful for fulfilling the request.
+FIRST include every component that DIRECTLY matches what the user explicitly
+asked for — match their words against each name and its description, including
+the "aka:" synonyms (e.g. "flip cards" → FlipCards, ...). THEN add variety:
+hero, content sections, social proof, and a closing call-to-action where
+relevant. Prefer CONNECTED components for donations/tickets/newsletter.
+
+Catalog:
+## Layout &amp; structure
+  Containers:
+    Section: A full-width section wrapper ...
+...
+Already on canvas: ...
+User request: "..."
+Respond with ONLY JSON: {"components": ["Name1", "Name2", ...]}</pre>
+    </div>
+    <div class="pc">
+      <h3>تعديل سكشن واحد</h3>
+      <p>‏<span class="ltr">buildSectionEditMessage · helpers:760</span>. بيتبعت السكشن بخصائصه، ومعاه كتالوج الأنواع وثيم الصفحة ومحتوى الجمعية (لحد 12 ألف حرف). مفيش system prompt، كله في رسالة user واحدة.</p>
+      <pre>You are editing ONE existing section of a web page in the Puck visual editor.
+Rewrite ONLY this section per the user's instruction; do not add other sections.
+
+CURRENT SECTION (Puck component tree, with its real props):
+{...}
+
+USER INSTRUCTION: "..."
+...
+RULES:
+- The FIRST component is this section's ROOT: keep its id EXACTLY "&lt;id&gt;" ...
+- Keep the SAME "type" as now unless the instruction clearly asks to change it
+- Apply the instruction and keep everything the user did NOT ask to change
+- For a CustomSection, edit its "html" prop directly ...
+
+AVAILABLE TYPES:
+## Layout &amp; structure ...</pre>
+    </div>
+    <div class="pc">
+      <h3>التخطيط (Discussion)</h3>
+      <p>‏<span class="ltr">CONSULTANT_SYSTEM_PROMPT · helpers:925</span>. ده الوحيد اللي بياخد المحادثة كلها (آخر 40 رسالة، وكل رسالة لحد 4000 حرف). حد الرد 2000 توكن.</p>
+      <pre>You are a senior web designer helping a nonprofit/charity plan ONE web page
+BEFORE it is built. ...
+- Ask as many clarifying questions as are genuinely useful this turn ...
+- Cover, as needed: the page's goal and its primary action (donate / volunteer
+  / book tickets / inform), the audience, the key sections and their order, the
+  tone and brand feel, must-have real content ..., and anything to avoid.
+- Do NOT write HTML, components, JSON, or a full page — you are only planning.
+- When you have enough to build a strong page, say so briefly and tell them to
+  switch to Execution mode to generate it.</pre>
+    </div>
+    <div class="pc">
+      <h3>ملخص المشروع (Brief)</h3>
+      <p>‏<span class="ltr">BRIEF_SUMMARY_SYSTEM · helpers:944</span>. بيتنفذ مع كل رد في الـ Discussion، وبياخد الـ brief القديم كبداية.</p>
+      <pre>Summarize the following design discussion into a concise BUILD BRIEF ...
+Goal:
+Primary action:
+Audience:
+Sections (in order):
+Tone / brand:
+Must-have content:
+Avoid:
+Keep it under 250 words. Only include what the discussion actually established ...</pre>
+    </div>
+    <div class="pc">
+      <h3>صفحات القوائم والتفاصيل</h3>
+      <p>‏<span class="ltr">buildListPageSystemPrompt · list-page-ai.js:135</span>. بيتولد من الـ schema بتاع كل صفحة. ده الوحيد اللي <b>بيمنع</b> CustomSection، وناتجه بيتحقق منه.</p>
+      <pre>You are the layout assistant of a list page builder. You edit ONE page whose
+structure is fixed; you only arrange and configure the blocks listed below.
+━━━ PAGE STRUCTURE (never break it) ━━━ ... regions ...
+━━━ RULES ━━━
+1. Use ONLY the block types above. NEVER use CustomSection or any other type,
+   and never write HTML, CSS, JavaScript, markdown or URLs with scripts ...
+2. Keep exactly one results block on the page. ...
+5. Always return the COMPLETE page ... with operation "replace_all" ...</pre>
+    </div>
+    <div class="pc">
+      <h3>صورة لسكشن، وصورة لصفحة</h3>
+      <p>‏<span class="ltr">section-from-image:141 · sections-from-image:293</span>. بيطلبوا HTML خام مش JSON، لأن علامات التنصيص في HTML بتبوّظ الـ JSON. الصفحة بتتقسم بعلامتي <code>&lt;!--__SECTION__--&gt;</code> و <code>&lt;!--__COLUMN__--&gt;</code>.</p>
+      <pre>You are an expert front-end designer. You are given an IMAGE of a website
+section (or page) and must recreate it as ONE self-contained section.
+- FIDELITY FIRST — reproduce what you SEE as closely as possible: the exact
+  layout ...; the EXACT colors (sample precise hex ... — do NOT substitute a
+  generic brand color); and ALL text VERBATIM in the same language.
+  Preserve reading direction — use dir="rtl" for Arabic/Hebrew.
+- Use a placeholder &lt;img&gt; (https://placehold.co/ ...) ONLY for photographs ...
+- Money/ticket CTAs must link to /programs, /program/{id} or
+  /fundraising-event with target="_top" — never a fake payment form.
+Output ONLY the raw HTML fragment — no markdown code fences, no JSON ...</pre>
+    </div>
+    <div class="pc">
+      <h3>مراجعة الصفحة (Critique)</h3>
+      <p>‏<span class="ltr">critique/route.ts:447</span>. الصفحة بتتبعت مقصوصة على 80 ألف حرف، وأقصى عدد ملاحظات 12.</p>
+      <pre>You are a senior web designer and conversion specialist reviewing ONE page of a
+nonprofit/charity website ... Return a SHORT, prioritized critique ... visual
+hierarchy, clarity of the primary call-to-action, copy length/tone,
+consistency, trust/social proof, accessibility, and whether donate/ticket CTAs
+point at real routes ... 3-7 high-value findings is ideal.
+Return ONLY JSON: { "summary": "...", "findings": [ { "severity": "high" | "medium" | "low", ... } ] }</pre>
+    </div>
+    <div class="pc">
+      <h3>مُرشد القطع (Advisor)</h3>
+      <p>‏<span class="ltr">ADVISOR_SYSTEM_PROMPT · helpers:819</span>. بياخد الكتالوج وأسماء المحرر وكونفيج <b>كل</b> القطع، من غير shortlist. ورده Markdown.</p>
+      <pre>You are a component finder for the Puck page builder. ...
+2. For EACH recommended existing component output, in this order:
+   - a "### &lt;Editor name&gt;" heading ...
+   - one short line on why it fits,
+   - a "**Settings to fill in:**" line, then a bullet list ...
+3. If NO existing component can do the job, output a "### Custom section"
+   heading ... and a fenced ```html block ...</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONFIG ============ -->
+<section id="config" aria-labelledby="cfg-h">
+  <div class="eyebrow">6</div>
+  <h2 id="cfg-h">الإعدادات والأرقام</h2>
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>الإعداد</th><th>القيمة</th><th>فين</th></tr></thead>
+      <tbody>
+        <tr><td>المزود</td><td>Google Gemini عن طريق endpoint متوافق مع OpenAI (<span class="ltr">generativelanguage.googleapis.com/v1beta/openai</span>)، ومكتبة <code>openai@6</code></td><td class="ltr">model-client.ts:13</td></tr>
+        <tr><td>الموديل</td><td><code>AI_COMPAT_MODEL</code>، والافتراضي <code>gemini-flash-latest</code>. الأسعار في الباك متسجلة كمان لـ <code>gemini-3.6-flash</code>، يعني ده غالبًا اللي شغال في الإنتاج</td><td class="ltr">model-client.ts:70 · ai-providers.php</td></tr>
+        <tr><td>المفتاح</td><td><code>AI_COMPAT_API_KEY</code>: مفتاح واحد للمنصة كلها</td><td class="ltr">model-client.ts:53</td></tr>
+        <tr><td>حد توكنز الرد</td><td>صفحة 64,000 · سكشن أو قائمة 24,000 · صورة سكشن 32,000 · صورة صفحة 60,000 · مراجعة أو مُرشد 8,000 · شات 2,000 · shortlist 4,000</td><td class="ltr">AI_COMPAT_*_MAX_TOKENS</td></tr>
+        <tr><td>عمق التفكير</td><td>auto تبقى low (أو <code>AI_REASONING_EFFORT</code>)، و high بيتحول medium من غير ما المستخدم يعرف</td><td class="ltr">openai-compatible:102-104</td></tr>
+        <tr><td>إعادة المحاولة</td><td>3 محاولات بعد 2 و 4 ثواني، على 400 و 429 و 5xx وأخطاء الشبكة. والـ SDK نفسه <code>maxRetries: 0</code></td><td class="ltr">model-client.ts:79</td></tr>
+        <tr><td>أقصى مدة</td><td>300 ثانية للتوليد، و 120 للمراجعة والمُرشد والرابط</td><td class="ltr">maxDuration</td></tr>
+        <tr><td>Runtime</td><td>Node (مش Edge)، لأن Netlify Edge مكانش بيوصّل متغيرات البيئة (عطل 16 سبتمبر 2026)</td><td class="ltr">openai-compatible:28-31</td></tr>
+        <tr><td>حدود السياق</td><td>كانفاس 400 ألف حرف · محتوى الجمعية 20 ألف · الـ brief 4 آلاف · المحادثة 40 رسالة × 4 آلاف حرف</td><td class="ltr">generation.ts:69-71</td></tr>
+        <tr><td>حجم الأجزاء الثابتة</td><td>الـ system حوالي 10,200 حرف · الكتالوج حوالي 15,200 حرف (91 قطعة) · القطع الأساسية اللي بتتبعت دايمًا 30</td><td>مقاسة بتشغيل الكود</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ============ BILLING ============ -->
+<section id="billing" aria-labelledby="bill-h">
+  <div class="eyebrow">7</div>
+  <h2 id="bill-h">الفوترة والرصيد</h2>
+  <ul>
+    <li>الـ AI موديول في الباقة (<code>ai-assistant</code>). لو مش موجود، الإضافة نفسها ماتظهرش، ويظهر شارة «مش في الباقة».</li>
+    <li>كل جمعية ليها <b>40$ في الشهر</b> (<code>monthly_budget_usd</code>). الاستهلاك اللي بيظهر للعميل = التكلفة الحقيقية × <b>10</b> (<code>client_markup</code>). يعني التكلفة الحقيقية على المنصة <b>4$ للجمعية في الشهر</b>.</li>
+    <li>السعر لكل مليون توكن: 0.30$ للدخل و 2.50$ للخرج. أي موديل مش في الجدول بيتحسب بسعر احتياطي أغلى بكتير (2.50$ و 15$).</li>
+    <li>النداء الفاشل مابيتحسبش. والحدث اللي فضل pending (مثلًا الدالة وقفت قبل التقرير) كمان مابيتحسبش.</li>
+    <li>العدّاد بيظهر جنب المحرر، والتحذير بيظهر عند 80%.</li>
+  </ul>
+  <p class="note"><b>حسبة تقريبية لتوليد صفحة كاملة، تقدير مش قياس:</b> حوالي 25 ألف توكن دخل (system و كونفيج مختار وكانفاس ومحتوى الجمعية)، وحوالي 15 ألف توكن خرج (تفكير و JSON). التكلفة الحقيقية حوالي 0.045$، وبعد الهامش حوالي 0.45$. يعني الـ 40$ تكفي تقريبًا <b>90 صفحة كاملة في الشهر</b>، والرقم ده بيقل كتير لو الصفحة فيها CustomSection كتير لأن الـ HTML بيكبّر الخرج. عشان نعرف الرقم الحقيقي، نسحب متوسط <code>cost_usd</code> من <code>ai_usage_events</code> في الإنتاج.</p>
+</section>
+
+<!-- ============ ISSUES ============ -->
+<section id="issues" aria-labelledby="iss-h">
+  <div class="eyebrow">8</div>
+  <h2 id="iss-h">المشاكل</h2>
+  <p>المشاكل مترتبة بالخطورة. «عالية» معناها بتأثر على أمان أو على صفحة عميل حقيقية. كل مشكلة معاها مكانها في الكود وطريقة إصلاحها.</p>
+  <div class="issues">
+
+    <article class="issue">
+      <div class="issue-head"><span class="id">P1</span><h3>ناتج الموديل بيدخل الصفحة من غير تحقق، ورد فاضي ممكن يمسح الصفحة</h3><span class="sev s-hi">عالية</span></div>
+      <dl>
+        <dt>اللي بيحصل</dt><dd>راوت البناء الرئيسي مابيبعتش <code>postProcess</code>، ومفيش أي تحقق من الأنواع أو الخصائص. يعني نوع مش موجود، أو قيمة برا الاختيارات، أو parentId غلط، كلهم بيدخلوا الصفحة زي ما هم. ولو الموديل رجّع JSON من غير <code>components</code> والنطاق whole أو modify أو fresh، العملية بتبقى replace_all على قائمة فاضية، فالصفحة كلها بتتمسح ماعدا السكاشن المقفولة. ورسالة الشرح بتظهر «undefined». في المقابل، صفحات القوائم بتعدّي على <code>finalizeListPageAiDocument</code> وبتتحقق.</dd>
+        <dt>المكان</dt><dd class="ltr">openai-compatible/route.ts:35 (no postProcess) · generation.ts:545-601, 645</dd>
+        <dt>الأثر</dt><dd>صفحة بايظة أو فاضية، والطلب بيتحسب على العميل. الـ undo بيرجّعها، بس بشرط المستخدم يعرف إن في undo.</dd>
+        <dt>الإصلاح</dt><dd>تحقق schema لكل قطعة من الكونفيج: النوع موجود، والـ select جوه الاختيارات، والـ slot جوه حاوية. ولو مفيش قطع صالحة، الصفحة متتغيرش ويظهر خطأ واضح.</dd>
+      </dl>
+    </article>
+
+    <article class="issue">
+      <div class="issue-head"><span class="id">P2</span><h3>البرومبت بيناقض نفسه في CustomSection</h3><span class="sev s-hi">عالية</span></div>
+      <dl>
+        <dt>اللي بيحصل</dt><dd>قسم COMPONENT CHOICE بيقول «استخدم CustomSection لما مفيش قطعة مناسبة بس». وبعده على طول، القاعدة 7 بتقول «USE CustomSection FREELY AND OFTEN… a page may be built entirely from them… never reuse the same one or two layouts». والقاعدة 8 بتطلب «award-winning agency build» فيه parallax و lightbox ومكتبات من CDN. الموديل بيمشي ورا آخر وأقوى أمر.</dd>
+        <dt>المكان</dt><dd class="ltr">puck-ai-helpers.ts:684-693 vs 713-748</dd>
+        <dt>الأثر</dt><dd>صفحات كتير بتطلع HTML خام. الأدمن مايقدرش يعدّلها من الحقول، ومش بتترجم (الموقع en و ar و fr)، ومش بتاخد المحتوى الحقيقي من الداتا بيز، وكل تعديل بسيط محتاج AI تاني (يعني فلوس تانية).</dd>
+        <dt>الإصلاح</dt><dd>نشيل القاعدة 7، ونخلي CustomSection آخر حل فعلًا، بحد أقصى سكشن أو اتنين في الصفحة، وبعدد في الـ postProcess.</dd>
+      </dl>
+    </article>
+
+    <article class="issue">
+      <div class="issue-head"><span class="id">P3</span><h3>صفحات تقيلة: كل CustomSection بتحمّل Tailwind من CDN التطوير</h3><span class="sev s-hi">عالية</span></div>
+      <dl>
+        <dt>اللي بيحصل</dt><dd>كل CustomSection عبارة عن iframe لوحده، بيحمّل <code>cdn.tailwindcss.com</code>. ده Play CDN، وTailwind نفسها بتقول إنه مش للإنتاج، لأنه بيترجم الـ CSS في المتصفح. ده غير أي مكتبة الموديل قرر يجيبها. صفحة فيها 10 سكاشن معناها 10 iframes و 10 نسخ من Tailwind.</dd>
+        <dt>المكان</dt><dd class="ltr">CustomSection.jsx:183, 208, 316</dd>
+        <dt>الأثر</dt><dd>تحميل بطيء للزوار، خصوصًا على الموبايل. والنص جوه srcdoc iframe أضعف في SEO والوصولية.</dd>
+        <dt>الإصلاح</dt><dd>CSS متجمّع مسبقًا يتحقن في الـ srcdoc بدل الـ CDN، مع P2 اللي هيقلل عدد السكاشن.</dd>
+      </dl>
+    </article>
+
+    <article class="issue">
+      <div class="issue-head"><span class="id">P4</span><h3>استيراد صفحة من رابط: بروكسي مفتوح وحماية SSRF ناقصة</h3><span class="sev s-hi">عالية</span></div>
+      <dl>
+        <dt>اللي بيحصل</dt><dd>
+          <ul>
+            <li>الراوت بيتأكد إن كوكي <code>admin_session_token</code> <b>موجودة</b> بس، من غير ما يتأكد إنها صح. أي حد يحط كوكي بأي قيمة يقدر يستخدم سيرفرنا عشان يجيب أي صفحة عامة.</li>
+            <li>الفحص بيبص على <b>اسم</b> الهوست بس. دومين بيشاور على IP داخلي (زي <span class="ltr">127.0.0.1.nip.io</span>) بيعدي، وكمان <span class="ltr">[::ffff:127.0.0.1]</span> ونطاق <span class="ltr">100.64.0.0/10</span>.</li>
+            <li>‏<code>redirect: 'follow'</code>: الطلب بيوصل للعنوان الداخلي الأول، وبعدين الفحص بيمنع الرد بس.</li>
+            <li>العكس كمان بيحصل: <code>startsWith('fc')</code> و <code>startsWith('fd')</code> معمولين لعناوين IPv6، لكنهم بيمنعوا دومينات سليمة زي <span class="ltr">fcbarcelona.com</span>.</li>
+            <li>في الباك، <code>render-url</code> مفيهوش أي منع للشبكة الداخلية. التحقق بيشوف إن الرابط url ويبدأ بـ http بس، وكروم بيفتح أي عنوان.</li>
+          </ul>
+        </dd>
+        <dt>المكان</dt><dd class="ltr">fetch-url/route.ts:693, 704-723 · lib/url-safety.js · RenderUrlRequest.php · UrlRenderService.php</dd>
+        <dt>الإصلاح</dt><dd>نتأكد من الجلسة بنداء للباك. نحل الـ DNS ونرفض أي IP خاص، ونعيد الفحص مع كل redirect يدوي. نصلّح فحص fc و fd عشان يشتغل على عناوين IPv6 بس. ونحط نفس المنع في <code>RenderUrlRequest</code>.</dd>
+      </dl>
+    </article>
+
+    <article class="issue">
+      <div class="issue-head"><span class="id">P5</span><h3>محتوى مخترع على موقع جمعية خيرية</h3><span class="sev s-md">متوسطة</span></div>
+      <dl>
+        <dt>اللي بيحصل</dt><dd>القاعدة 3 بتقول «Populate props with realistic values». ده بيخلي الموديل يألّف شهادات ناس، وأسماء متبرعين في DonorWall، وأرقام أثر، وأعضاء فريق، كلهم شكلهم حقيقي. البرومبت بيقول إن الأرقام «decorative»، بس مابيطلبش إنها تبان كأمثلة.</dd>
+        <dt>المكان</dt><dd class="ltr">puck-ai-helpers.ts:699, 678-679</dd>
+        <dt>الأثر</dt><dd>لو الأدمن نشر من غير ما يراجع، الجمعية بتنشر شهادات وأرقام مش حقيقية. ده خطر على الثقة، وممكن يبقى خطر قانوني كمان.</dd>
+        <dt>الإصلاح</dt><dd>قاعدة صريحة: أي شهادة أو اسم أو رقم مش جاي من REAL SITE CONTENT يتكتب كنص مثال واضح (زي «[اسم المتبرع]»)، ونعرض تنبيه قبل النشر.</dd>
+      </dl>
+    </article>
+
+    <article class="issue">
+      <div class="issue-head"><span class="id">P6</span><h3>الموديل مايعرفش لغة الموقع ولا اتجاهه</h3><span class="sev s-md">متوسطة</span></div>
+      <dl>
+        <dt>اللي بيحصل</dt><dd>برومبت البناء مفيهوش ولا كلمة عن لغة الجمعية أو RTL. أدوات الصور بس هي اللي بتذكر <code>dir="rtl"</code>. يعني جمعية عربي بتكتب طلب بالإنجليزي، بتاخد صفحة إنجليزي. ونص CustomSection ثابت بلغة واحدة حتى لو الموقع بـ 3 لغات.</dd>
+        <dt>المكان</dt><dd class="ltr">generation.ts:408-453 (no locale block)</dd>
+        <dt>الإصلاح</dt><dd>نبعت لغة الجمعية الافتراضية واللغات المفعّلة واتجاه الكتابة، ونطلب إن النص يتكتب بيها.</dd>
+      </dl>
+    </article>
+
+    <article class="issue">
+      <div class="issue-head"><span class="id">P7</span><h3>وضع البناء مالوش ذاكرة للمحادثة</h3><span class="sev s-md">متوسطة</span></div>
+      <dl>
+        <dt>اللي بيحصل</dt><dd>في Execution بيتبعت <b>آخر رسالة بس</b> (<code>extractUserPrompt</code>). لو المستخدم كتب «خليها أقصر» أو «زي ما قلتلك فوق»، الموديل مايعرفش هو بيتكلم عن إيه، إلا من الكانفاس.</dd>
+        <dt>المكان</dt><dd class="ltr">generation.ts:504 · puck-ai-helpers.ts:886</dd>
+        <dt>الإصلاح</dt><dd>نبعت آخر 6 إلى 10 رسائل (موجودة أصلًا في <code>extractThread</code>).</dd>
+      </dl>
+    </article>
+
+    <article class="issue">
+      <div class="issue-head"><span class="id">P8</span><h3>الوضع الافتراضي «Discussion» بيلخبط المستخدم الجديد</h3><span class="sev s-md">متوسطة</span></div>
+      <dl>
+        <dt>اللي بيحصل</dt><dd>من v2 الافتراضي بقى <code>interaction: 'discussion'</code>. أول مرة الأدمن يكتب «اعمل لي صفحة عن رمضان» بيرجعله أسئلة ومش بيتبني حاجة، ولازم يلاقي اختيار Execution في القايمة. وكل رد بيتحسب.</dd>
+        <dt>المكان</dt><dd class="ltr">lib/ai-prefs.js (AI_PREF_DEFAULTS)</dd>
+        <dt>الإصلاح</dt><dd>زرار «ابني دلوقتي» جنب رد الـ Discussion، أو الافتراضي يبقى Execution مع اقتراح التخطيط للطلبات الغامضة.</dd>
+      </dl>
+    </article>
+
+    <article class="issue">
+      <div class="issue-head"><span class="id">P9</span><h3>فوترة ناقصة: نداءات بتتنفذ ومابتتحسبش</h3><span class="sev s-md">متوسطة</span></div>
+      <dl>
+        <dt>اللي بيحصل</dt>
+        <dd>
+          <ul>
+            <li>نداء الـ shortlist (حوالي 4 آلاف توكن دخل) مابيرجّعش توكنز خالص، فمابيتحسبش أبدًا.</li>
+            <li>لو الرد اتقطع واتعاد، توكنز المحاولة الأولى بتضيع، وهي غالبًا الأغلى لأنها خلصت الحد.</li>
+            <li>محاولات <code>withRetries</code> اللي فشلت مابتتحسبش. ده مقصود، بس جوجل ممكن يكون حسبها.</li>
+            <li>أي طلب يفضل pending (الدالة وقفت عند 300 ثانية أو السيرفر وقع) مجاني، ومفيش job بيقفل الأحداث القديمة.</li>
+          </ul>
+        </dd>
+        <dt>المكان</dt><dd class="ltr">openai-compatible:67-84, 120-126 · AiCreditService::usedUsdThisMonth</dd>
+        <dt>الإصلاح</dt><dd>نجمع توكنز كل النداءات في التقرير، ونعمل job يقفل الأحداث اللي فضلت pending أكتر من 10 دقايق بحالة failed ويسجّل السبب.</dd>
+      </dl>
+    </article>
+
+    <article class="issue">
+      <div class="issue-head"><span class="id">P10</span><h3>موديل مش متثبت ومزود واحد</h3><span class="sev s-md">متوسطة</span></div>
+      <dl>
+        <dt>اللي بيحصل</dt><dd>الافتراضي <code>gemini-flash-latest</code>، وده alias بيتغير لما جوجل تنزل موديل جديد. يعني سلوك البناء وسعره ممكن يتغيروا من غير أي deploy عندنا. ومفيش مزود بديل لو جوجل وقع. وكمان الكود بيفحص <code>isGemini</code> في 7 أماكن.</dd>
+        <dt>المكان</dt><dd class="ltr">model-client.ts:70 · كل route.ts</dd>
+        <dt>الإصلاح</dt><dd>نثبت نسخة الموديل في البيئة، ونجرّب أي نسخة جديدة على مجموعة تقييم قبل ما نغير، ونحط مزود احتياطي في <code>resolveClient</code>.</dd>
+      </dl>
+    </article>
+
+    <article class="issue">
+      <div class="issue-head"><span class="id">P11</span><h3>اختيار «تفكير عالي» مش بيعمل اللي مكتوب عليه</h3><span class="sev s-md">متوسطة</span></div>
+      <dl>
+        <dt>اللي بيحصل</dt><dd>القايمة فيها High، بس الكود بيحوّله medium من غير ما المستخدم يعرف، عشان التفكير مايخلصش الحد قبل الـ JSON.</dd>
+        <dt>المكان</dt><dd class="ltr">openai-compatible:102-104 · list-page/route.ts:97</dd>
+        <dt>الإصلاح</dt><dd>نسمي الاختيارات حسب اللي بيحصل فعلًا: «سريع» و«أدق».</dd>
+      </dl>
+    </article>
+
+    <article class="issue">
+      <div class="issue-head"><span class="id">P12</span><h3>البرومبت أكبر من اللازم</h3><span class="sev s-md">متوسطة</span></div>
+      <dl>
+        <dt>اللي بيحصل</dt><dd>الكونفيج بيتبعت بـ <code>JSON.stringify(..., null, 2)</code>، والمسافات دي بتزوّد التوكنز من غير فايدة. والكانفاس بيتبعت كامل لحد 400 ألف حرف (حوالي 100 ألف توكن) في كل طلب modify. والمتصفح بيرفع كونفيج الـ 91 قطعة كله في كل طلب.</dd>
+        <dt>المكان</dt><dd class="ltr">puck-ai-helpers.ts:971 · generation.ts:69, 340</dd>
+        <dt>الإصلاح</dt><dd>JSON مضغوط، ونشيل نصوص CustomSection الطويلة من الكانفاس لما مش هي المطلوب تعديلها، ونبني الكونفيج على السيرفر بدل ما ييجي من المتصفح.</dd>
+      </dl>
+    </article>
+
+    <article class="issue">
+      <div class="issue-head"><span class="id">P13</span><h3>انتظار طويل من غير ما يبان فين وصل</h3><span class="sev s-lo">بسيطة</span></div>
+      <dl>
+        <dt>اللي بيحصل</dt><dd>بيظهر «Generating layout» ونقط لحد دقايق، والنتيجة يا كلها يا مفيش. لو الـ JSON اتقطع، كله بيضيع بعد ما اتحسب.</dd>
+        <dt>الإصلاح</dt><dd>نبعت مراحل الشغل للمستخدم (بختار القطع، بكتب الصفحة، بطبّق)، وهي موجودة أصلًا في <code>stage()</code>.</dd>
+      </dl>
+    </article>
+
+    <article class="issue">
+      <div class="issue-head"><span class="id">P14</span><h3>تعديل <span class="ltr">window.fetch</span> في مكانين</h3><span class="sev s-lo">بسيطة</span></div>
+      <dl>
+        <dt>اللي بيحصل</dt><dd>‏<code>Builder.jsx</code> و <code>use-puck-ai-requests.js</code> الاتنين بيستبدلوا <code>window.fetch</code>. لو اتشالوا بترتيب مختلف عن ترتيب تركيبهم، ممكن ترجع نسخة قديمة. وطبقة التحميل بتختفي مع أول طلب يخلص، حتى لو في طلب تاني لسه شغال (زي المراجعة مع البناء).</dd>
+        <dt>المكان</dt><dd class="ltr">Builder.jsx:78-125 · hooks/admin/use-puck-ai-requests.js</dd>
+        <dt>الإصلاح</dt><dd>interceptor واحد بعدّاد للطلبات الشغالة.</dd>
+      </dl>
+    </article>
+
+    <article class="issue">
+      <div class="issue-head"><span class="id">P15</span><h3>كود مكرر بين الراوتات</h3><span class="sev s-lo">بسيطة</span></div>
+      <dl>
+        <dt>اللي بيحصل</dt><dd>الإذن والتقرير وصياغة الأخطاء وفحص isGemini متكررين في 6 راوتات بنسخ متشابهة. أي تعديل في الفوترة لازم يتعمل 6 مرات.</dd>
+        <dt>الإصلاح</dt><dd>wrapper واحد، زي <code>withAiBilling(handler)</code>.</dd>
+      </dl>
+    </article>
+
+    <article class="issue">
+      <div class="issue-head"><span class="id">P16</span><h3>صياغة مصادر البيانات مش دقيقة</h3><span class="sev s-lo">بسيطة</span></div>
+      <dl>
+        <dt>اللي بيحصل</dt><dd>أي باراميتر بيقبل قيمة ثابتة بيتوصف بـ «elsewhere a real id»، حتى لو هو <code>sort</code> أو <code>search</code> أو <code>per_page</code>. والبرومبت الرئيسي بيتبني من غير نوع الصفحة، فالموديل مايعرفش هو في صفحة برنامج ولا فعالية.</dd>
+        <dt>المكان</dt><dd class="ltr">puck-ai-helpers.ts:375, 750</dd>
+      </dl>
+    </article>
+
+    <article class="issue">
+      <div class="issue-head"><span class="id">P17</span><h3>اختبارات ناقصة في الجزء الأخطر</h3><span class="sev s-lo">بسيطة</span></div>
+      <dl>
+        <dt>اللي بيحصل</dt><dd>الدوال المساعدة عليها اختبارات (14 في <code>puck-ai-helpers.test.mjs</code>، غير list-page-ai و ai-prefs و url-safety)، وفي الباك <code>AiCreditServiceTest</code> فيه 5. بس <code>generation.ts</code> مالوش ولا اختبار: اختيار العملية، و mergeLocked، وتبديل السكشن، والرد الفاضي، والتقارير. ومفيش مجموعة طلبات ثابتة نقيس عليها جودة البرومبت قبل أي تعديل.</dd>
+      </dl>
+    </article>
+
+  </div>
+  <p class="note">حاجات اتعملت كويس وتستاهل تفضل: السكاشن المقفولة، والـ brief اللي بيتبني أثناء النقاش، ومحتوى الجمعية الحقيقي في كل طلب، ومنع فورم دفع مزيف، وإن اختيار المستخدم للنطاق أقوى من الموديل، والـ CustomSection من غير <code>allow-same-origin</code>، وإن الفوترة بترفض الطلب لو الباك وقع، والتحقق في صفحات القوائم، واللوجات اللي بتسجل كل مرحلة.</p>
+</section>
+
+<!-- ============ PLAN ============ -->
+<section id="plan" aria-labelledby="plan-h">
+  <div class="eyebrow">9</div>
+  <h2 id="plan-h">خطة الإصلاح والمدة</h2>
+  <p>الأيام دي أيام شغل لمطور واحد، وشاملة الاختبار. الترتيب حسب الأولوية: الأمان الأول، وبعده اللي بيبوّظ صفحات العملاء.</p>
+  <div class="tablebox">
+    <table>
+      <thead><tr><th>#</th><th>الشغل</th><th>بيحل</th><th class="num">فرونت</th><th class="num">باك</th></tr></thead>
+      <tbody>
+        <tr><td class="num">1</td><td>تأمين الاستيراد من رابط في الفرونت والباك</td><td class="ltr">P4</td><td class="num">2</td><td class="num">1</td></tr>
+        <tr><td class="num">2</td><td>تحقق schema لناتج البناء، وحماية من الرد الفاضي</td><td class="ltr">P1</td><td class="num">3</td><td class="num">—</td></tr>
+        <tr><td class="num">3</td><td>إعادة كتابة البرومبت (CustomSection، والمحتوى المخترع، واللغة، ومصادر البيانات) مع مجموعة تقييم من 20 طلب</td><td class="ltr">P2 P5 P6 P16</td><td class="num">4</td><td class="num">—</td></tr>
+        <tr><td class="num">4</td><td>CSS متجمّع للـ CustomSection بدل Play CDN</td><td class="ltr">P3</td><td class="num">4</td><td class="num">—</td></tr>
+        <tr><td class="num">5</td><td>ذاكرة المحادثة، والوضع الافتراضي، وأسماء التفكير</td><td class="ltr">P7 P8 P11</td><td class="num">2</td><td class="num">—</td></tr>
+        <tr><td class="num">6</td><td>فوترة كاملة، و job للأحداث المعلقة</td><td class="ltr">P9</td><td class="num">1</td><td class="num">1</td></tr>
+        <tr><td class="num">7</td><td>تثبيت الموديل ومزود احتياطي</td><td class="ltr">P10</td><td class="num">1.5</td><td class="num">—</td></tr>
+        <tr><td class="num">8</td><td>تصغير البرومبت</td><td class="ltr">P12</td><td class="num">1</td><td class="num">—</td></tr>
+        <tr><td class="num">9</td><td>مراحل التقدم للمستخدم</td><td class="ltr">P13</td><td class="num">2</td><td class="num">—</td></tr>
+        <tr><td class="num">10</td><td>interceptor واحد، و wrapper للراوتات</td><td class="ltr">P14 P15</td><td class="num">2</td><td class="num">—</td></tr>
+        <tr><td class="num">11</td><td>اختبارات generation.ts</td><td class="ltr">P17</td><td class="num">2</td><td class="num">—</td></tr>
+      </tbody>
+      <tfoot><tr><td></td><td>الإجمالي: حوالي 26 يوم، يعني 5 أو 6 أسابيع لمطور واحد، أو 3 أسابيع لاتنين</td><td></td><td class="num">24.5</td><td class="num">2</td></tr></tfoot>
+    </table>
+  </div>
+  <p class="note">البنود 1 و 2 و 6 (حوالي 8 أيام) تتعمل الأول، لأنها بتقفل مخاطر أمان وفلوس وصفحات بتتمسح. وأي تعديل على البرومبت (البند 3) لازم يتقاس على مجموعة التقييم قبل وبعد.</p>
+</section>
+
+<!-- ============ CATALOG ============ -->
+<section id="catalog" aria-labelledby="cat-h">
+  <div class="eyebrow">ملحق</div>
+  <h2 id="cat-h">كتالوج القطع اللي الموديل يقدر يستخدمها (90)</h2>
+  <p>ده نفس التقسيم اللي بيوصل للموديل في نداء الـ shortlist وفي تعديل السكشن. القطع اللي بتبدأ بـ Home، ومعاها EventCalendarGrid و ContactFormSection و FundraisingProgress، «CONNECTED»، يعني بتجيب بيانات حقيقية. والقطعة رقم 91، LiveFundraisingProgress، متسجلة بس متخبية عن الموديل.</p>
+  <div class="groups"><div class="grp"><h3>Layout &amp; structure <span class="note">(9)</span></h3><p>Section · VLayout · HLayout · GridLayout · BackgroundImage · Spacer · Divider · SectionDivider · Button</p></div>
+<div class="grp"><h3>Text &amp; typography <span class="note">(5)</span></h3><p>Heading · HeaderText · Text · List · ReadMoreText</p></div>
+<div class="grp"><h3>Media <span class="note">(10)</span></h3><p>Image · Video · VideoSpotlight · ImageGallery · VideoGallery · Embed · Pdf · Map · SocialIcon · CircleIcon</p></div>
+<div class="grp"><h3>Heroes &amp; banners <span class="note">(8)</span></h3><p>Hero · CtaHero · CampaignHero · DualPathHero · HomeHero · AnnouncementBar · PromoBanner · MatchingChallengeBanner</p></div>
+<div class="grp"><h3>About &amp; storytelling <span class="note">(10)</span></h3><p>About · MissionVision · StorySpotlight · SplitShowcase · QuoteBanner · Steps · Stepper · Timeline · JourneyPathways · ProcessTimeline</p></div>
+<div class="grp"><h3>Features &amp; services <span class="note">(10)</span></h3><p>FeatureGrid · FeatureCards · ServiceHighlights · ServiceCardsBand · Card · Cards · FlipCards · ActionCards · LinkTileGrid · PortfolioGrid</p></div>
+<div class="grp"><h3>Social proof &amp; trust <span class="note">(7)</span></h3><p>Testimonials · LogoStrip · SponsorTiers · TrustBadges · TeamMembers · Stats · AnimatedCounters</p></div>
+<div class="grp"><h3>Donations, events &amp; fundraising <span class="note">(9)</span></h3><p>HomePrograms · HomeEvents · HomeUpcomingEvents · EventCalendarGrid · FundraisingProgress · DonationTierCards · ImpactReport · DonorWall · VolunteerRoles</p></div>
+<div class="grp"><h3>Forms &amp; contact <span class="note">(9)</span></h3><p>Form · FormTextField · FormTextarea · FormSelect · FormCheckbox · FormRadioGroup · FormPhoneField · ContactFormSection · ContactPanel</p></div>
+<div class="grp"><h3>Blog &amp; news <span class="note">(2)</span></h3><p>HomeBlog · BlogCardsGrid</p></div>
+<div class="grp"><h3>Newsletter &amp; connected home <span class="note">(3)</span></h3><p>HomeNewsletter · HomeCta · HomeStatistics</p></div>
+<div class="grp"><h3>Interactive &amp; specialized <span class="note">(6)</span></h3><p>FaqAccordion · ContentTabs · BeforeAfter · Countdown · PricingTable · ZakatCalculator</p></div>
+<div class="grp"><h3>Footer <span class="note">(1)</span></h3><p>RichFooterSection</p></div>
+<div class="grp"><h3>Custom <span class="note">(1)</span></h3><p>CustomSection</p></div></div>
+</section>
+
+</div>
+
+</body></html>
